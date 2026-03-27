@@ -9,6 +9,8 @@ use App\Http\Requests\Api\Auth\ResetPasswordRequest;
 use App\Http\Resources\UserResource;
 use App\Models\DeviceToken;
 use App\Models\User;
+use App\Notifications\PasswordResetNotification;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -31,6 +33,8 @@ class AuthController extends BaseApiController
         $token = $user->createToken($request->device_name)->plainTextToken;
 
         $this->storeDeviceToken($user, $request);
+
+        $user->notify(new WelcomeNotification());
 
         return $this->success([
             'user'  => new UserResource($user),
@@ -105,7 +109,7 @@ class AuthController extends BaseApiController
 
         Cache::put("otp:reset:{$user->email}", Hash::make($otp), now()->addMinutes(15));
 
-        // TODO Sprint 5 : Notification::send($user, new PasswordResetNotification($otp));
+        $user->notify(new PasswordResetNotification($otp));
 
         $data = app()->isLocal() ? ['otp' => $otp] : null;
 

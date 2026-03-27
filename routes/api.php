@@ -82,8 +82,9 @@ Route::prefix('v1')->group(function () {
 
         // Notifications
         Route::get('notifications',                [\App\Http\Controllers\Api\V1\NotificationController::class, 'index']);
+        Route::get('notifications/unread-count',   [\App\Http\Controllers\Api\V1\NotificationController::class, 'unreadCount']);
         Route::patch('notifications/{id}/read',    [\App\Http\Controllers\Api\V1\NotificationController::class, 'markRead']);
-        Route::post('notifications/read-all',      [\App\Http\Controllers\Api\V1\NotificationController::class, 'markAllRead']);
+        Route::post('notifications/read-all',      [\App\Http\Controllers\Api\V1\NotificationController::class, 'readAll']);
     });
 
     // ── Administration (authentifié + role:admin) ─────────────────────────
