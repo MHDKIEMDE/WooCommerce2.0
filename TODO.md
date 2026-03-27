@@ -1,5 +1,5 @@
 # TODO — WooCommerce 2.0
-> Dernière mise à jour : 27 mars 2026
+> Dernière mise à jour : 27 mars 2026 (session 2)
 > Stack : Laravel 13 · PHP 8.3 · MySQL 8 · Blade (Web) · Flutter (API)
 
 ---
@@ -8,9 +8,9 @@
 
 | Couche          | Progression |
 |-----------------|-------------|
-| Backend API     | ██░░░░░░░░ 28% |
-| Frontend Blade  | ██░░░░░░░░ 22% |
-| Global          | ██░░░░░░░░ ~25% |
+| Backend API     | ████░░░░░░ 42% |
+| Frontend Blade  | ███░░░░░░░ 32% |
+| Global          | ███░░░░░░░ ~37% |
 
 ---
 
@@ -32,27 +32,27 @@
 ## SPRINT 2 — Catalogue Web (semaine 2-3)
 
 ### Backend
-- [ ] `ProductResource` — transformation JSON produit
-- [ ] `ProductCollection` — listing paginé
-- [ ] `CategoryResource`
-- [ ] `BrandResource`
-- [ ] Logique `ProductController@index` — filtres, tri, pagination, cache
-- [ ] Logique `ProductController@show` — fiche complète avec attributs, images, variantes
-- [ ] Logique `CategoryController@index` + `@products`
-- [ ] Logique `BrandController@index`
-- [ ] Logique `SearchController@index` — full-text
-- [ ] `ProductObserver` — auto-slug unique SEO
-- [ ] Cache Redis catalogue (TTL 10 min, invalidation Observer)
-- [ ] Cache Redis catégories (TTL 60 min)
+- [x] `ProductResource` — transformation JSON produit
+- [x] `ProductCollection` — listing paginé
+- [x] `CategoryResource`
+- [x] `BrandResource`
+- [x] Logique `ProductController@index` — filtres, tri, pagination, cache
+- [x] Logique `ProductController@show` — fiche complète avec attributs, images, variantes
+- [x] Logique `CategoryController@index` + `@products`
+- [x] Logique `BrandController@index`
+- [x] Logique `SearchController@index` — full-text
+- [x] `ProductObserver` — auto-slug unique SEO
+- [x] Cache Redis catalogue (TTL 10 min, invalidation Observer)
+- [x] Cache Redis catégories (TTL 60 min)
 - [ ] Index DB : slug, status, category_id (migration séparée si besoin)
-- [ ] Eager loading `with(['category','images','brand','attributes'])`
+- [x] Eager loading `with(['category','images','brand','attributes'])`
 
 ### Frontend Blade
-- [ ] `routes/web.php` — ajouter routes boutique GET
-- [ ] `ShopController` (web) — index + show
-- [ ] Intégration `index.html` → `home.blade.php` (données réelles)
-- [ ] Intégration `shop.html` → `shop/index.blade.php` avec filtres
-- [ ] Intégration `single-full-width.html` → `shop/show.blade.php`
+- [x] `routes/web.php` — ajouter routes boutique GET
+- [x] `ShopController` (web) — index + show
+- [x] Intégration `index.html` → `home.blade.php` (données réelles)
+- [x] Intégration `shop.html` → `shop.blade.php` avec filtres
+- [x] Intégration `single-full-width.html` → `showProduct.blade.php`
 - [ ] Composant Blade carte produit (réutilisable)
 - [ ] Composant Blade pagination
 - [ ] Header/footer depuis `headers.html` → `layouts/partials/`
@@ -271,7 +271,7 @@
 | Sprint | Sujet                     | Durée     | Statut       |
 |--------|---------------------------|-----------|--------------|
 | 1      | Foundation                | Semaine 1 | ✅ Terminé   |
-| 2      | Catalogue Web             | Sem. 2-3  | ⏳ En cours  |
+| 2      | Catalogue Web             | Sem. 2-3  | 🔄 Partiel   |
 | 3      | Auth & Compte             | Sem. 4    | ⬜ À faire   |
 | 4      | Panier & Checkout         | Sem. 5-6  | ⬜ À faire   |
 | 5      | Notifications             | Sem. 7    | ⬜ À faire   |
