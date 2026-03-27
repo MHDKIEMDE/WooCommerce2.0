@@ -1,66 +1,230 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# WooCommerce 2.0 — Plateforme E-Commerce
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend API REST pour une plateforme de vente de produits alimentaires.
+Conçu pour être consommé par une application mobile **Flutter** (iOS & Android) et un panneau d'administration.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack technique
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Composant | Technologie |
+|-----------|-------------|
+| Framework | Laravel 12 · PHP 8.3 |
+| Base de données | MySQL 8 |
+| Authentification | Laravel Sanctum (tokens Bearer multi-device) |
+| Paiements | Laravel Cashier · Stripe |
+| Notifications push | Firebase FCM HTTP v1 |
+| Cache / Queue | Redis |
+| Tests | PHPUnit · Pest |
+| Build frontend | Vite |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Prérequis
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.2+
+- Composer 2
+- MySQL 8
+- Redis
+- Node.js + npm
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Installation
 
-## Laravel Sponsors
+```bash
+# 1. Cloner et installer les dépendances
+git clone <repo>
+cd WooCommerce2.0
+composer install
+npm install
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# 2. Configurer l'environnement
+cp .env.example .env
+php artisan key:generate
 
-### Premium Partners
+# 3. Configurer la base de données dans .env
+# DB_CONNECTION=mysql
+# DB_DATABASE=Shop
+# DB_USERNAME=...
+# DB_PASSWORD=...
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+# 4. Migrations et seeders
+php artisan migrate
+php artisan db:seed
 
-## Contributing
+# 5. Lancer les serveurs
+php artisan serve        # API : http://localhost:8000
+npm run dev              # Assets Vite
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## Variables d'environnement clés
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```env
+APP_NAME=WooCommerce
+APP_URL=http://localhost:8000
 
-## Security Vulnerabilities
+DB_CONNECTION=mysql
+DB_DATABASE=Shop
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+SANCTUM_TOKEN_EXPIRATION=43200   # 30 jours en minutes
 
-## License
+STRIPE_KEY=pk_...
+STRIPE_SECRET=sk_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+FIREBASE_PROJECT_ID=...
+FIREBASE_CREDENTIALS=storage/app/firebase-credentials.json
+
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+
+QUEUE_CONNECTION=redis
+CACHE_STORE=redis
+```
+
+---
+
+## Architecture
+
+```
+app/
+├── Http/
+│   ├── Controllers/Api/V1/
+│   │   ├── Auth/          ← Inscription, login, OTP reset
+│   │   ├── Admin/         ← Dashboard, produits, commandes, rapports
+│   │   └── ...            ← Catalogue, panier, compte client
+│   ├── Requests/          ← Validation (Form Requests)
+│   ├── Resources/         ← Transformation JSON (API Resources)
+│   └── Middleware/
+├── Models/
+├── Services/              ← Logique métier (Cart, Order, Stock, Push...)
+├── Events/ · Listeners/   ← OrderPlaced, OrderShipped, PaymentConfirmed...
+├── Observers/             ← Slug auto, rating_avg
+├── Notifications/         ← Emails + Push FCM
+├── Policies/              ← Autorisations par ressource
+└── Jobs/                  ← Emails et push en asynchrone
+
+routes/
+├── api.php                ← Tous les endpoints /api/v1/
+└── console.php            ← Tâches planifiées
+```
+
+---
+
+## Endpoints principaux
+
+### Authentification
+```
+POST   /api/v1/auth/register
+POST   /api/v1/auth/login
+POST   /api/v1/auth/logout              [auth]
+POST   /api/v1/auth/logout-all          [auth]
+POST   /api/v1/auth/forgot-password
+POST   /api/v1/auth/verify-reset-code
+POST   /api/v1/auth/reset-password
+```
+
+### Catalogue (public)
+```
+GET    /api/v1/products
+GET    /api/v1/products/{slug}
+GET    /api/v1/categories
+GET    /api/v1/categories/{slug}/products
+GET    /api/v1/brands
+GET    /api/v1/search?q=...
+```
+
+### Panier & Commandes
+```
+GET    /api/v1/cart
+POST   /api/v1/cart/items
+POST   /api/v1/checkout
+POST   /api/v1/checkout/webhook         [signature Stripe — sans auth]
+GET    /api/v1/orders
+GET    /api/v1/orders/{id}/invoice
+```
+
+### Administration `[auth · role:admin]`
+```
+GET    /api/v1/admin/dashboard
+GET    /api/v1/admin/products           + POST, PATCH, DELETE
+GET    /api/v1/admin/orders             + PATCH /{id}/status
+GET    /api/v1/admin/users              + PATCH /{id}/toggle-active
+GET    /api/v1/admin/reports/sales
+```
+
+> Voir [cahier_des_charges.md](cahier_des_charges.md) pour la liste complète des 60+ endpoints.
+
+---
+
+## Format de réponse API
+
+Toutes les réponses respectent ce format uniforme :
+
+**Succès**
+```json
+{
+  "success": true,
+  "message": "Produits récupérés avec succès",
+  "data": [...],
+  "meta": { "current_page": 1, "last_page": 8, "per_page": 15, "total": 112 }
+}
+```
+
+**Erreur**
+```json
+{
+  "success": false,
+  "message": "Les données sont invalides",
+  "errors": { "email": ["L'adresse email est déjà utilisée"] }
+}
+```
+
+---
+
+## Authentification multi-device (Flutter)
+
+Chaque appareil Flutter reçoit son propre token Bearer. Un même `device_name` révoque l'ancien token.
+
+```json
+POST /api/v1/auth/login
+{
+  "email": "user@example.com",
+  "password": "...",
+  "device_name": "iPhone 15 Pro de Jean",
+  "platform": "ios",
+  "fcm_token": "..."
+}
+```
+
+---
+
+## Commandes utiles
+
+```bash
+php artisan test                        # Tous les tests
+php artisan test --filter NomDuTest     # Un test précis
+php artisan route:list                  # Liste des routes
+php artisan queue:work                  # Démarrer le worker Redis
+php artisan cache:clear                 # Vider le cache
+php artisan config:clear                # Vider le cache de config
+```
+
+---
+
+## Tests
+
+Objectif de couverture : **≥ 70%** sur les Services critiques.
+
+```bash
+php artisan test
+php artisan test --coverage
+```
+
+---
+
+*Voir [cahier_des_charges.md](cahier_des_charges.md) pour les spécifications complètes.*
+*Développé par MHDKIEMDE — Mars 2026*
