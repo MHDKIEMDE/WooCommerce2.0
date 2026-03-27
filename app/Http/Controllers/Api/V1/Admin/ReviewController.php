@@ -14,7 +14,9 @@ class ReviewController extends BaseApiController
         $query = Review::with(['user:id,name,email', 'product:id,name,slug'])->latest();
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $request->status === 'approved'
+                ? $query->whereNotNull('approved_at')
+                : $query->whereNull('approved_at');
         }
 
         if ($request->filled('product_id')) {
@@ -27,14 +29,14 @@ class ReviewController extends BaseApiController
     public function approve(int $id): JsonResponse
     {
         $review = Review::findOrFail($id);
-        $review->update(['status' => 'approved']);
 
-        // Recalculate product rating
-        $product = $review->product;
-        $product->update([
-            'rating_avg'   => $product->reviews()->where('status', 'approved')->avg('rating') ?? 0,
-            'rating_count' => $product->reviews()->where('status', 'approved')->count(),
-        ]);
+        if ($review->approved_at) {
+            return $this->error('Avis déjà approuvé.', 409);
+        }
+
+        $review->update(['approved_at' => now()]);
+
+        $this->recalculateRating($review->product);
 
         return $this->success(null, 'Avis approuvé.');
     }
@@ -46,11 +48,16 @@ class ReviewController extends BaseApiController
 
         $review->delete();
 
-        $product->update([
-            'rating_avg'   => $product->reviews()->where('status', 'approved')->avg('rating') ?? 0,
-            'rating_count' => $product->reviews()->where('status', 'approved')->count(),
-        ]);
+        $this->recalculateRating($product);
 
         return $this->success(null, 'Avis supprimé.');
+    }
+
+    private function recalculateRating(\App\Models\Product $product): void
+    {
+        $product->update([
+            'rating_avg'   => $product->reviews()->whereNotNull('approved_at')->avg('rating') ?? 0,
+            'rating_count' => $product->reviews()->whereNotNull('approved_at')->count(),
+        ]);
     }
 }

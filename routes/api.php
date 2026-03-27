@@ -13,8 +13,8 @@ Route::prefix('v1')->group(function () {
     // ── Auth (public) ─────────────────────────────────────────────────────
     Route::prefix('auth')->group(function () {
         Route::post('register',          [\App\Http\Controllers\Api\V1\Auth\AuthController::class, 'register']);
-        Route::post('login',             [\App\Http\Controllers\Api\V1\Auth\AuthController::class, 'login']);
-        Route::post('forgot-password',   [\App\Http\Controllers\Api\V1\Auth\AuthController::class, 'forgotPassword']);
+        Route::post('login',             [\App\Http\Controllers\Api\V1\Auth\AuthController::class, 'login'])->middleware('throttle:5,1');
+        Route::post('forgot-password',   [\App\Http\Controllers\Api\V1\Auth\AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
         Route::post('verify-reset-code', [\App\Http\Controllers\Api\V1\Auth\AuthController::class, 'verifyResetCode']);
         Route::post('reset-password',    [\App\Http\Controllers\Api\V1\Auth\AuthController::class, 'resetPassword']);
 
@@ -22,6 +22,7 @@ Route::prefix('v1')->group(function () {
             Route::post('logout',        [\App\Http\Controllers\Api\V1\Auth\AuthController::class, 'logout']);
             Route::post('logout-all',    [\App\Http\Controllers\Api\V1\Auth\AuthController::class, 'logoutAll']);
             Route::post('verify-email',  [\App\Http\Controllers\Api\V1\Auth\AuthController::class, 'verifyEmail']);
+            Route::post('refresh',       [\App\Http\Controllers\Api\V1\Auth\AuthController::class, 'refresh']);
         });
     });
 
@@ -38,13 +39,13 @@ Route::prefix('v1')->group(function () {
 
     // ── Panier (mixte invité / connecté) ──────────────────────────────────
     Route::prefix('cart')->group(function () {
-        Route::get('/',                            [\App\Http\Controllers\Api\V1\CartController::class, 'index']);
-        Route::post('items',                       [\App\Http\Controllers\Api\V1\CartController::class, 'addItem']);
-        Route::patch('items/{id}',                 [\App\Http\Controllers\Api\V1\CartController::class, 'updateItem']);
-        Route::delete('items/{id}',                [\App\Http\Controllers\Api\V1\CartController::class, 'removeItem']);
-        Route::post('coupon',                      [\App\Http\Controllers\Api\V1\CartController::class, 'applyCoupon']);
-        Route::delete('coupon',                    [\App\Http\Controllers\Api\V1\CartController::class, 'removeCoupon']);
-        Route::delete('/',                         [\App\Http\Controllers\Api\V1\CartController::class, 'clear']);
+        Route::get('/',            [\App\Http\Controllers\Api\V1\CartController::class, 'index']);
+        Route::post('items',       [\App\Http\Controllers\Api\V1\CartController::class, 'addItem']);
+        Route::patch('items/{id}', [\App\Http\Controllers\Api\V1\CartController::class, 'updateItem']);
+        Route::delete('items/{id}',[\App\Http\Controllers\Api\V1\CartController::class, 'removeItem']);
+        Route::post('coupon',      [\App\Http\Controllers\Api\V1\CartController::class, 'applyCoupon']);
+        Route::delete('coupon',    [\App\Http\Controllers\Api\V1\CartController::class, 'removeCoupon']);
+        Route::delete('/',         [\App\Http\Controllers\Api\V1\CartController::class, 'clear']);
     });
 
     // ── Webhook Stripe (sans auth — signature vérifée dans le controller) ─

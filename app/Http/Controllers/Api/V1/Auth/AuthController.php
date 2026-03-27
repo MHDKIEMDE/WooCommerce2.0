@@ -156,6 +156,22 @@ class AuthController extends BaseApiController
         return $this->success(null, 'Mot de passe réinitialisé avec succès.');
     }
 
+    /**
+     * Révoque le token courant et en génère un nouveau (même device_name).
+     * Utile pour la rotation de token côté mobile.
+     */
+    public function refresh(Request $request): JsonResponse
+    {
+        $currentToken = $request->user()->currentAccessToken();
+        $deviceName   = $currentToken->name;
+
+        $currentToken->delete();
+
+        $newToken = $request->user()->createToken($deviceName)->plainTextToken;
+
+        return $this->success(['token' => $newToken], 'Token renouvelé.');
+    }
+
     private function storeDeviceToken(User $user, Request $request): void
     {
         if ($request->filled('fcm_token')) {

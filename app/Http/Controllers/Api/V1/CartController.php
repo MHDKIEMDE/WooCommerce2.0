@@ -6,6 +6,7 @@ use App\Http\Resources\CartResource;
 use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends BaseApiController
 {
@@ -13,7 +14,7 @@ class CartController extends BaseApiController
 
     public function index(Request $request): JsonResponse
     {
-        $cart = $this->cartService->getCart($request->user());
+        $cart = $this->cartService->getCart(Auth::guard('sanctum')->user());
 
         return response()->json([
             'success' => true,
@@ -40,7 +41,7 @@ class CartController extends BaseApiController
         ]);
 
         $result = $this->cartService->addItem(
-            $request->user(),
+            Auth::guard('sanctum')->user(),
             $request->product_id,
             $request->input('quantity', 1),
             $request->variant_id,
@@ -59,7 +60,7 @@ class CartController extends BaseApiController
             'quantity' => ['required', 'integer', 'min:1', 'max:99'],
         ]);
 
-        $result = $this->cartService->updateItem($request->user(), $id, $request->quantity);
+        $result = $this->cartService->updateItem(Auth::guard('sanctum')->user(), $id, $request->quantity);
 
         if (! $result['success']) {
             return $this->error($result['message'], 422);
@@ -70,7 +71,7 @@ class CartController extends BaseApiController
 
     public function removeItem(Request $request, int $id): JsonResponse
     {
-        $removed = $this->cartService->removeItem($request->user(), $id);
+        $removed = $this->cartService->removeItem(Auth::guard('sanctum')->user(), $id);
 
         if (! $removed) {
             return $this->error('Article introuvable.', 404);
@@ -83,7 +84,7 @@ class CartController extends BaseApiController
     {
         $request->validate(['code' => 'required|string|max:50']);
 
-        $result = $this->cartService->applyCoupon($request->user(), $request->code);
+        $result = $this->cartService->applyCoupon(Auth::guard('sanctum')->user(), $request->code);
 
         if (! $result['valid']) {
             return $this->error($result['message'], 422);
@@ -101,7 +102,7 @@ class CartController extends BaseApiController
 
     public function clear(Request $request): JsonResponse
     {
-        $this->cartService->clear($request->user());
+        $this->cartService->clear(Auth::guard('sanctum')->user());
 
         return $this->success(null, 'Panier vidé.');
     }

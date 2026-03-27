@@ -59,7 +59,7 @@ class ProductController extends BaseApiController
         $data = $request->validate([
             'name'              => 'required|string|max:191',
             'short_description' => 'nullable|string',
-            'description'       => 'nullable|string',
+            'description'       => 'required|string',
             'price'             => 'required|numeric|min:0',
             'compare_price'     => 'nullable|numeric|min:0',
             'cost_price'        => 'nullable|numeric|min:0',
@@ -68,7 +68,7 @@ class ProductController extends BaseApiController
             'low_stock_threshold' => 'nullable|integer|min:0',
             'category_id'       => 'required|exists:categories,id',
             'brand_id'          => 'nullable|exists:brands,id',
-            'status'            => 'required|in:active,inactive,draft',
+            'status'            => 'required|in:active,draft,archived',
             'featured'          => 'boolean',
             'weight'            => 'nullable|numeric|min:0',
             'vat_rate'          => 'nullable|numeric|min:0|max:100',

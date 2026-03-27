@@ -38,7 +38,7 @@ class CategoryController extends BaseApiController
             'description' => 'nullable|string',
             'parent_id'   => 'nullable|exists:categories,id',
             'sort_order'  => 'nullable|integer|min:0',
-            'image'       => 'nullable|string',
+            'image_url'   => 'nullable|string|max:191',
         ]);
 
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
@@ -60,7 +60,7 @@ class CategoryController extends BaseApiController
             'description' => 'nullable|string',
             'parent_id'   => 'nullable|exists:categories,id',
             'sort_order'  => 'nullable|integer|min:0',
-            'image'       => 'nullable|string',
+            'image_url'   => 'nullable|string|max:191',
         ]);
 
         if (isset($data['name']) && ! isset($data['slug'])) {
