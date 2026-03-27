@@ -8,9 +8,9 @@
 
 | Couche          | Progression |
 |-----------------|-------------|
-| Backend API     | ████░░░░░░ 42% |
-| Frontend Blade  | ███░░░░░░░ 32% |
-| Global          | ███░░░░░░░ ~37% |
+| Backend API     | █████░░░░░ 55% |
+| Frontend Blade  | ████░░░░░░ 40% |
+| Global          | ████░░░░░░ ~47% |
 
 ---
 
@@ -64,30 +64,30 @@
 ## SPRINT 3 — Auth & Compte (semaine 4)
 
 ### Backend Auth API
-- [ ] Logique `AuthController@register` — création compte + token
-- [ ] Logique `AuthController@login` — token par device_name, révocation ancien
-- [ ] Logique `AuthController@logout` / `@logoutAll`
-- [ ] Logique `AuthController@verifyEmail`
-- [ ] OTP Reset — `@forgotPassword` → stocker OTP Redis TTL 15min
-- [ ] OTP Reset — `@verifyResetCode` → retourner reset_token TTL 10min
-- [ ] OTP Reset — `@resetPassword` → changer mot de passe
-- [ ] `RegisterRequest` Form Request (validation)
-- [ ] `LoginRequest` Form Request
-- [ ] `ResetPasswordRequest` Form Request
-- [ ] Middleware `active` — vérifier `is_active = true`
+- [x] Logique `AuthController@register` — création compte + token
+- [x] Logique `AuthController@login` — token par device_name, révocation ancien
+- [x] Logique `AuthController@logout` / `@logoutAll`
+- [x] Logique `AuthController@verifyEmail`
+- [x] OTP Reset — `@forgotPassword` → stocker OTP Redis TTL 15min
+- [x] OTP Reset — `@verifyResetCode` → retourner reset_token TTL 10min
+- [x] OTP Reset — `@resetPassword` → changer mot de passe
+- [x] `RegisterRequest` Form Request (validation)
+- [x] `LoginRequest` Form Request
+- [x] `ResetPasswordRequest` Form Request
+- [x] Middleware `active` — vérifier `is_active = true`
 - [ ] `throttle:5,1` sur login et forgot-password
-- [ ] `DeviceToken` enregistrement FCM token au login
-- [ ] `UserResource` — format JSON utilisateur
-- [ ] Logique `AccountController@show` / `@update` / `@avatar`
-- [ ] Logique `AddressController` — CRUD + set default
-- [ ] `AddressResource`
+- [x] `DeviceToken` enregistrement FCM token au login
+- [x] `UserResource` — format JSON utilisateur
+- [x] Logique `AccountController@show` / `@update` / `@avatar`
+- [x] Logique `AddressController` — CRUD + set default
+- [x] `AddressResource`
 
 ### Frontend Blade Auth
-- [ ] Routes web auth (login, register, logout, forgot, reset)
-- [ ] Câbler `login.blade.php` avec session Laravel
-- [ ] Câbler `register.blade.php`
-- [ ] Page forgot-password (lien email)
-- [ ] Page reset-password
+- [x] Routes web auth (login, register, logout, forgot, reset)
+- [x] Câbler `login.blade.php` avec session Laravel
+- [x] Câbler `register.blade.php`
+- [x] Page forgot-password (lien email)
+- [x] Page reset-password
 - [ ] Intégration `my-account.html` → `account/index.blade.php`
 - [ ] Page adresses client
 - [ ] Page modifier profil / upload avatar
@@ -272,7 +272,7 @@
 |--------|---------------------------|-----------|--------------|
 | 1      | Foundation                | Semaine 1 | ✅ Terminé   |
 | 2      | Catalogue Web             | Sem. 2-3  | 🔄 Partiel   |
-| 3      | Auth & Compte             | Sem. 4    | ⬜ À faire   |
+| 3      | Auth & Compte             | Sem. 4    | 🔄 Partiel   |
 | 4      | Panier & Checkout         | Sem. 5-6  | ⬜ À faire   |
 | 5      | Notifications             | Sem. 7    | ⬜ À faire   |
 | 6      | Administration            | Sem. 8-9  | ⬜ À faire   |
