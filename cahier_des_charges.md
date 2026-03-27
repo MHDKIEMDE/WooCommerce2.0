@@ -1,6 +1,6 @@
-# Cahier des Charges — Plateforme E-Commerce API REST
-**Stack : Laravel 13 · PHP 8.3 · MySQL 8 · Flutter (multi-clients)**
-**Version : 1.0 — Mars 2026**
+# Cahier des Charges — Plateforme E-Commerce
+**Stack : Laravel 13 · PHP 8.3 · MySQL 8 · Blade (Web) · Flutter (Mobile)**
+**Version : 2.0 — Mars 2026**
 
 ---
 
@@ -13,13 +13,14 @@
 5. [Base de données](#5-base-de-données)
 6. [Authentification & Sécurité](#6-authentification--sécurité)
 7. [Modules fonctionnels](#7-modules-fonctionnels)
-8. [Endpoints API REST](#8-endpoints-api-rest)
-9. [Notifications & Communication](#9-notifications--communication)
-10. [Performances & Cache](#10-performances--cache)
-11. [Tests](#11-tests)
-12. [Planning de développement](#12-planning-de-développement)
-13. [Livrables](#13-livrables)
-14. [Critères d'acceptation](#14-critères-dacceptation)
+8. [Frontend Web (Blade)](#8-frontend-web-blade)
+9. [Endpoints API REST](#9-endpoints-api-rest)
+10. [Notifications & Communication](#10-notifications--communication)
+11. [Performances & Cache](#11-performances--cache)
+12. [Tests](#12-tests)
+13. [Planning de développement](#13-planning-de-développement)
+14. [Livrables](#14-livrables)
+15. [Critères d'acceptation](#15-critères-dacceptation)
 
 ---
 
@@ -27,28 +28,35 @@
 
 ### 1.1 Contexte
 
-Le projet consiste à développer un **backend API REST** pour une plateforme de vente de produits alimentaires. Ce backend sera le serveur central consommé par plusieurs clients :
+Le projet consiste à développer une **plateforme e-commerce complète** pour la vente de produits alimentaires. Laravel joue un double rôle :
 
-- Application mobile **Flutter** (iOS + Android) — client principal
-- Futurs clients mobiles ou web (React Native, Vue.js, etc.)
-- Panneau d'administration (SPA ou application Flutter dédiée)
+- **Frontend web** via Blade + Vite — site marchand complet accessible depuis n'importe quel navigateur
+- **Backend API REST** — serveur consommé par l'application mobile Flutter
 
-**Laravel ne sert aucun frontend.** Il expose uniquement des endpoints JSON.
+Les templates HTML fournis dans `resources/HTML/` servent de base graphique pour toutes les vues Blade du site web.
 
-### 1.2 Philosophie
+### 1.2 Clients de la plateforme
 
-> Le backend est une API pure. Toute la logique métier vit côté serveur Laravel. Les clients (Flutter, web) ne font que consommer et afficher les données.
+| Client | Technologie | Mode de connexion |
+|--------|-------------|-------------------|
+| **Site web** | Laravel Blade + Vite | Sessions Laravel (web) |
+| **App mobile iOS / Android** | Flutter | API REST + Bearer Token Sanctum |
+| **App admin (futur v2)** | Flutter ou SPA | API REST + Bearer Token (role:admin) |
 
-### 1.3 Portée
+### 1.3 Philosophie
+
+> Laravel est à la fois le moteur du site web ET le serveur API. La logique métier est centralisée dans des Services partagés, consommés aussi bien par les Controllers web (Blade) que par les Controllers API (JSON).
+
+### 1.4 Portée
 
 | Inclus | Hors périmètre |
-|--------|---------------|
-| API REST versionnée `/api/v1/` | Développement des apps Flutter |
-| Authentification multi-device Sanctum | Intégration CMS |
-| Catalogue produits générique | Programme de fidélité (v2) |
-| Panier, commandes, paiements Stripe | Application mobile admin (v2) |
-| Notifications push FCM | Marketplace multi-vendeurs (v2) |
-| Dashboard admin JSON | — |
+|--------|----------------|
+| Site web complet en Blade (templates fournis) | Développement de l'app Flutter |
+| API REST versionnée `/api/v1/` | Intégration CMS |
+| Authentification web (sessions) + mobile (Sanctum) | Programme de fidélité (v2) |
+| Catalogue produits, panier, commandes, paiements Stripe | Marketplace multi-vendeurs (v2) |
+| Notifications push FCM | — |
+| Dashboard admin (web) | — |
 
 ---
 
@@ -56,18 +64,19 @@ Le projet consiste à développer un **backend API REST** pour une plateforme de
 
 ### 2.1 Objectifs fonctionnels
 
-- Permettre la vente en ligne de produits alimentaires via une app Flutter
+- Permettre la vente en ligne via le site web Blade et l'app Flutter
 - Gérer le cycle complet d'une commande (panier → paiement → livraison → facture)
 - Offrir une interface d'administration complète pour gérer produits, commandes et clients
 - Envoyer des notifications push en temps réel sur les devices Flutter
+- Assurer une expérience web fluide, responsive et fidèle aux templates HTML fournis
 
 ### 2.2 Objectifs techniques
 
-- API REST robuste, documentée et versionnée
-- Architecture évolutive : adaptable à tout type de produit sans modifier le schéma SQL
-- Multi-client : un seul backend pour plusieurs applications
+- Architecture **DRY** : les Services métier sont partagés entre le web et l'API
+- API REST robuste, documentée et versionnée (pour Flutter)
 - Multi-device : un utilisateur peut être connecté sur plusieurs appareils simultanément
-- Performances : temps de réponse < 200 ms sur les endpoints catalogue (avec cache Redis)
+- Performances : temps de réponse < 200 ms sur les pages catalogue (avec cache Redis)
+- Frontend web 100% fidèle aux templates HTML de `resources/HTML/`
 
 ---
 
@@ -77,33 +86,36 @@ Le projet consiste à développer un **backend API REST** pour une plateforme de
 
 | Composant | Technologie | Version | Rôle |
 |-----------|-------------|---------|------|
-| Framework | Laravel | 13.x | Cœur du backend |
+| Framework | Laravel | 13.x | Cœur backend + frontend web |
 | Langage | PHP | 8.3 | Runtime |
 | Base de données | MySQL | 8.x | Stockage principal |
 | ORM | Eloquent | — | Modèles, migrations, relations |
-| Authentification | Laravel Sanctum | — | Tokens Bearer multi-device |
+| Auth web | Laravel Fortify / Auth | — | Sessions pour le site Blade |
+| Auth API | Laravel Sanctum | — | Tokens Bearer multi-device Flutter |
 | Paiements | Laravel Cashier (Stripe) | — | Checkout, webhooks, factures |
 | Push notifications | Firebase FCM (HTTP v1) | — | Notifications mobiles |
 | Emails | Laravel Mailable + Queue | — | Transactionnel |
 | Stockage | Laravel Storage (S3 / local) | — | Images produits, PDF |
 | Cache / Queue | Redis | — | Cache, jobs asynchrones |
+| Frontend assets | Vite + Tailwind CSS | — | Compilation CSS/JS Blade |
 | Tests | PHPUnit + Pest | — | Tests unitaires et fonctionnels |
 
-### 3.2 Clients (hors périmètre backend)
+### 3.2 Frontend Web (Blade)
 
-| Client | Technologie | Connexion |
-|--------|-------------|-----------|
-| App mobile principale | Flutter (iOS + Android) | API REST + Bearer Token |
-| App admin (futur) | Flutter ou SPA | API REST + Bearer Token (role:admin) |
-| Autres clients | Tout framework | API REST + Bearer Token |
-
-### 3.3 Ce que Laravel ne fait PAS dans ce projet
-
-- Aucun fichier `.blade.php`
-- Aucune vue, layout, composant Blade
-- Aucun HTML, CSS, JavaScript généré côté serveur
-- Aucune session web (uniquement tokens Sanctum)
-- Pas de CSRF sur les routes API
+| Fichier source | Vue Blade cible | Page |
+|----------------|-----------------|------|
+| `index.html` | `home.blade.php` | Page d'accueil |
+| `shop.html` | `shop/index.blade.php` | Catalogue / listing produits |
+| `single-full-width.html` | `shop/show.blade.php` | Fiche produit |
+| `cart.html` | `cart/index.blade.php` | Panier |
+| `checkout.html` | `checkout/index.blade.php` | Tunnel de commande |
+| `my-account.html` | `account/index.blade.php` | Espace client |
+| `wishlist.html` | `account/wishlist.blade.php` | Liste de souhaits |
+| `track-order.html` | `account/orders/track.blade.php` | Suivi de commande |
+| `contact.html` | `contact.blade.php` | Page contact |
+| `about-us.html` | `about.blade.php` | À propos |
+| `headers.html` | `layouts/partials/header.blade.php` | Header commun |
+| `blog.html` / `single-blog.html` | `blog/` | Blog (si activé) |
 
 ---
 
@@ -114,30 +126,78 @@ Le projet consiste à développer un **backend API REST** pour une plateforme de
 ```
 app/
 ├── Http/
-│   ├── Controllers/Api/V1/
-│   │   ├── Auth/
-│   │   ├── Admin/
-│   │   └── (controllers publics et authentifiés)
-│   ├── Requests/          ← Form Requests (validation)
-│   ├── Resources/         ← API Resources (transformation JSON)
+│   ├── Controllers/
+│   │   ├── Web/                    ← Controllers Blade (sessions)
+│   │   │   ├── HomeController.php
+│   │   │   ├── ShopController.php
+│   │   │   ├── CartController.php
+│   │   │   ├── CheckoutController.php
+│   │   │   ├── AccountController.php
+│   │   │   └── Admin/
+│   │   └── Api/V1/                 ← Controllers API JSON (Flutter)
+│   │       ├── Auth/
+│   │       ├── Admin/
+│   │       └── (controllers publics et authentifiés)
+│   ├── Requests/          ← Form Requests (partagés web + API)
+│   ├── Resources/         ← API Resources (transformation JSON — API only)
 │   └── Middleware/
 ├── Models/
-├── Services/              ← Logique métier
+├── Services/              ← Logique métier partagée (web + API)
+│   ├── CartService.php
+│   ├── OrderService.php
+│   ├── StockService.php
+│   ├── CouponService.php
+│   └── PushNotificationService.php
 ├── Events/
 ├── Listeners/
 ├── Observers/
-├── Notifications/         ← Email + Push FCM
+├── Notifications/
 ├── Policies/
 └── Jobs/
 
+resources/
+├── views/                 ← Blade templates
+│   ├── layouts/
+│   │   ├── app.blade.php
+│   │   └── admin.blade.php
+│   ├── home.blade.php
+│   ├── shop/
+│   ├── cart/
+│   ├── checkout/
+│   ├── account/
+│   └── admin/
+├── HTML/                  ← Templates HTML source (référence graphique)
+├── css/
+└── js/
+
 routes/
-├── api.php               ← Toutes les routes API
-└── console.php           ← Scheduler (Laravel 13)
+├── web.php               ← Routes Blade (sessions)
+├── api.php               ← Routes API REST /api/v1/
+└── console.php           ← Scheduler
 ```
 
-### 4.2 Format de réponse standard
+### 4.2 Principe du partage des Services
 
-Toutes les réponses API respectent ce format uniforme, compatible Flutter :
+```
+                    ┌──────────────────────────────┐
+                    │         Services/             │
+                    │  CartService, OrderService... │
+                    └────────────┬─────────────────┘
+                                 │
+              ┌──────────────────┴──────────────────┐
+              │                                      │
+   ┌──────────▼──────────┐               ┌──────────▼──────────┐
+   │  Web/Controllers    │               │  Api/V1/Controllers  │
+   │  (session + Blade)  │               │  (token + JSON)      │
+   └─────────────────────┘               └──────────────────────┘
+              │                                      │
+   ┌──────────▼──────────┐               ┌──────────▼──────────┐
+   │  Blade Templates    │               │  API Resources JSON  │
+   │  (HTML → .blade.php)│               │  (pour Flutter)      │
+   └─────────────────────┘               └──────────────────────┘
+```
+
+### 4.3 Format de réponse API standard (Flutter)
 
 **Succès**
 ```json
@@ -166,18 +226,19 @@ Toutes les réponses API respectent ce format uniforme, compatible Flutter :
 }
 ```
 
-### 4.3 Règles d'architecture
+### 4.4 Règles d'architecture
 
-1. **Services** : toute la logique métier est dans des classes `App\Services\*` injectées dans les constructeurs
+1. **Services** : toute la logique métier est dans des classes `App\Services\*` — partagées entre web et API
 2. **Form Requests** : chaque action de mutation a sa propre Form Request
-3. **API Resources** : tous les retours JSON passent par une Resource (jamais de `$model->toArray()`)
-4. **Observers** : génération automatique de slugs, mise à jour de `rating_avg`
-5. **Events / Listeners** : `OrderPlaced`, `OrderShipped`, `OrderDelivered`, `PaymentConfirmed`
-6. **Policies** : autorisations par ressource — `ProductPolicy`, `OrderPolicy`, `ReviewPolicy`
-7. **Versioning** : toutes les routes sous `/api/v1/` ; une future v2 coexistera sans casser v1
-8. **Dates** : toutes en ISO 8601 UTC — `"2026-03-27T14:30:00Z"`
-9. **Images** : toujours retournées en URL complète (jamais de chemin relatif)
-10. **CORS** : configuré pour accepter toutes les origines (apps mobiles)
+3. **API Resources** : tous les retours JSON API passent par une Resource
+4. **Blade** : les vues web consomment les données directement depuis les Controllers (pas de Resource)
+5. **Observers** : génération automatique de slugs, mise à jour de `rating_avg`
+6. **Events / Listeners** : `OrderPlaced`, `OrderShipped`, `OrderDelivered`, `PaymentConfirmed`
+7. **Policies** : autorisations par ressource — `ProductPolicy`, `OrderPolicy`, `ReviewPolicy`
+8. **Versioning API** : toutes les routes API sous `/api/v1/`
+9. **Dates** : toutes en ISO 8601 UTC — `"2026-03-27T14:30:00Z"`
+10. **Images** : toujours retournées en URL complète
+11. **CORS** : configuré pour les apps mobiles (origines multiples)
 
 ---
 
@@ -333,6 +394,7 @@ Système d'attributs dynamiques — clé de l'adaptabilité multi-produits.
 | `coupons` | code unique, type(percent/fixed), value, min_order, usage_limit, used_count, expires_at | Codes promo |
 | `reviews` | product_id, user_id, order_id nullable, rating(1-5), comment, approved_at | Avis vérifiés |
 | `notifications_log` | user_id, type, title, body, data JSON, read_at | Historique push |
+| `product_images` | product_id, url, alt, sort_order | Images produits multiples |
 | `settings` | key unique, value, group | Config boutique |
 
 ### 5.2 Adaptabilité multi-produits
@@ -350,7 +412,20 @@ Le système est conçu pour ne jamais nécessiter de migration SQL lors d'un cha
 
 ## 6. Authentification & Sécurité
 
-### 6.1 Laravel Sanctum — Multi-device
+### 6.1 Authentification Web (Blade — sessions)
+
+L'authentification du site web utilise les **sessions Laravel** (cookies) via Laravel Fortify ou le système Auth intégré.
+
+```
+POST /login          → Session + redirection
+POST /register       → Création compte + session
+POST /logout         → Destruction session
+GET  /email/verify   → Vérification email
+POST /forgot-password → Lien reset par email
+POST /reset-password  → Nouveau mot de passe
+```
+
+### 6.2 Authentification API (Flutter — Sanctum tokens)
 
 Chaque appareil Flutter reçoit son **propre token Bearer** nommé avec `device_name`.
 
@@ -361,14 +436,12 @@ Body : { email, password, device_name, platform, fcm_token }
 ```
 
 **Comportement :**
-- Un login sur le même `device_name` révoque l'ancien token (évite l'accumulation)
+- Un login sur le même `device_name` révoque l'ancien token
 - `/api/v1/auth/logout` — révoque uniquement le token du device courant
-- `/api/v1/auth/logout-all` — révoque tous les tokens (changement de mot de passe, compte compromis)
+- `/api/v1/auth/logout-all` — révoque tous les tokens
 - Les tokens expirent après 30 jours (configurable via `.env`)
 
-### 6.2 Reset de mot de passe — OTP mobile
-
-Le flow classique par lien email est inadapté aux apps mobiles. On utilise un **code OTP à 6 chiffres** :
+### 6.3 Reset de mot de passe API — OTP mobile
 
 ```
 1. POST /api/v1/auth/forgot-password  → envoie OTP par email (TTL 15 min, stocké Redis)
@@ -376,28 +449,31 @@ Le flow classique par lien email est inadapté aux apps mobiles. On utilise un *
 3. POST /api/v1/auth/reset-password   → nouveau mot de passe avec reset_token
 ```
 
-### 6.3 Middleware et rôles
+### 6.4 Middleware et rôles
 
 | Middleware | Rôle |
 |-----------|------|
-| `auth:sanctum` | Vérifie le token Bearer |
+| `auth` | Authentification web (session) |
+| `auth:sanctum` | Vérifie le token Bearer API |
 | `role:admin` | Vérifie que l'utilisateur est admin ou super-admin |
 | `verified` | Vérifie que l'email est confirmé |
 | `active` | Vérifie que le compte n'est pas suspendu (`is_active = true`) |
 | `throttle:5,1` | Rate limit login (5 tentatives/minute) |
 
-### 6.4 Sécurité générale
+### 6.5 Sécurité générale
 
 | Risque | Mesure |
 |--------|--------|
 | Injection SQL | Eloquent ORM — aucune requête brute |
+| XSS | Blade échappe automatiquement `{{ }}` |
+| CSRF | Protection CSRF active sur toutes les routes web |
 | Accès non autorisé | Policies Laravel sur toutes les ressources |
 | Brute force | Throttle sur login et forgot-password |
 | Upload malveillant | Validation MIME type + extension |
 | Données sensibles | Jamais de `cost_price` dans les Resources publiques |
 | Webhook Stripe | Vérification de la signature `Stripe-Signature` |
-| CORS | Configuré pour les apps mobiles (toutes origines) |
-| Tokens | Aucun token en clair en base (hashés par Sanctum) |
+| CORS | Configuré pour les apps mobiles (origines multiples) |
+| Tokens API | Aucun token en clair en base (hashés par Sanctum) |
 
 ---
 
@@ -406,15 +482,15 @@ Le flow classique par lien email est inadapté aux apps mobiles. On utilise un *
 ### 7.1 Catalogue produits
 
 - Listing paginé avec filtres : catégorie, marque, fourchette de prix, statut stock, mise en avant, recherche full-text
-- Fiche produit complète : attributs dynamiques, images (URLs complètes), variantes, note moyenne
+- Fiche produit complète : attributs dynamiques, images multiples, variantes, note moyenne
 - Tri : prix croissant/décroissant, nouveautés, popularité, note
 - Auto-génération du slug via Observer (unique, SEO-friendly)
 - `rating_avg` et `rating_count` mis à jour automatiquement à chaque avis approuvé
 
 ### 7.2 Panier
 
-- Panier en session (`session_id`) pour les visiteurs non connectés
-- Panier en base (`user_id`) pour les utilisateurs connectés
+- Panier en session (`session_id`) pour les visiteurs non connectés (web)
+- Panier en base (`user_id`) pour les utilisateurs connectés (web + API)
 - Fusion automatique du panier invité au moment du login
 - Vérification du stock à chaque ajout et au moment du checkout
 - Support des variantes (`variant_id`)
@@ -430,26 +506,29 @@ pending → processing → shipped → delivered
                               ↘ refunded
 ```
 
+**Web :** tunnel Blade multi-étapes (adresse → paiement → confirmation)
+**API :** création commande → `client_secret` Stripe → paiement côté Flutter
+
 - Création de commande depuis le panier (snapshot produit en JSON)
-- Intégration Stripe : création d'un `PaymentIntent` → retour du `client_secret` à Flutter
-- Flutter complète le paiement côté client (Stripe SDK Flutter)
+- Intégration Stripe : `PaymentIntent` pour web et mobile
 - Webhook Stripe confirme le paiement → déclenche l'Event `PaymentConfirmed`
 - Génération automatique du numéro de commande (`CMD-2026-XXXXX`)
 - Génération de la facture PDF à la demande (DomPDF)
 - Décrémentation du stock après paiement confirmé
 
-### 7.4 Espace client (API)
+### 7.4 Espace client
 
 - Profil : modification des informations, upload avatar
 - Carnet d'adresses : CRUD + définir une adresse par défaut
 - Historique des commandes paginé avec détails et téléchargement facture
+- Suivi de commande (numéro de suivi)
 - Liste de souhaits (favoris)
 - Avis produits (uniquement si achat vérifié)
 - Historique des notifications push reçues
 
-### 7.5 Administration (API JSON)
+### 7.5 Administration (dashboard web)
 
-Toutes les routes sous `/api/v1/admin/` avec middleware `auth:sanctum + role:admin`.
+Toutes les routes sous `/admin/` avec middleware `auth + role:admin`.
 
 | Module | Actions |
 |--------|---------|
@@ -465,23 +544,98 @@ Toutes les routes sous `/api/v1/admin/` avec middleware `auth:sanctum + role:adm
 
 ---
 
-## 8. Endpoints API REST
+## 8. Frontend Web (Blade)
 
-### 8.1 Authentification
+### 8.1 Principe d'intégration HTML → Blade
+
+Les templates HTML fournis dans `resources/HTML/` sont intégrés en Blade selon ces règles :
+
+1. **Layout principal** : `resources/views/layouts/app.blade.php` — header + footer communs extraits de `headers.html`
+2. **Sections** : chaque page utilise `@extends('layouts.app')` + `@section('content')`
+3. **Composants** : éléments répétitifs (carte produit, pagination, mini-cart) en `@component` ou Blade components
+4. **Assets** : CSS/JS du template compilés via Vite depuis `resources/css/` et `resources/js/`
+5. **Images** : assets statiques déplacés dans `public/` ou référencés via `asset()`
+
+### 8.2 Pages web et routes associées
+
+| Route | Vue Blade | Template source |
+|-------|-----------|-----------------|
+| `GET /` | `home.blade.php` | `index.html` |
+| `GET /shop` | `shop/index.blade.php` | `shop.html` |
+| `GET /shop/{slug}` | `shop/show.blade.php` | `single-full-width.html` |
+| `GET /cart` | `cart/index.blade.php` | `cart.html` |
+| `GET /checkout` | `checkout/index.blade.php` | *(dérivé de cart.html)* |
+| `GET /checkout/success` | `checkout/success.blade.php` | *(page confirmation)* |
+| `GET /account` | `account/index.blade.php` | `my-account.html` |
+| `GET /account/orders` | `account/orders/index.blade.php` | `my-account.html` |
+| `GET /account/orders/{id}/track` | `account/orders/track.blade.php` | `track-order.html` |
+| `GET /wishlist` | `account/wishlist.blade.php` | `wishlist.html` |
+| `GET /contact` | `contact.blade.php` | `contact.html` |
+| `GET /about` | `about.blade.php` | `about-us.html` |
+| `GET /admin/dashboard` | `admin/dashboard.blade.php` | *(interface admin)* |
+
+### 8.3 Routes web (Blade)
+
+```
+GET  /                         → HomeController@index
+GET  /shop                     → ShopController@index
+GET  /shop/{slug}              → ShopController@show
+GET  /search                   → ShopController@search
+
+POST /cart/add                 → CartController@add       [web auth optional]
+GET  /cart                     → CartController@index
+PATCH /cart/items/{id}         → CartController@update
+DELETE /cart/items/{id}        → CartController@remove
+POST /cart/coupon              → CartController@applyCoupon
+DELETE /cart/coupon            → CartController@removeCoupon
+
+GET  /checkout                 → CheckoutController@index  [auth]
+POST /checkout                 → CheckoutController@store  [auth]
+GET  /checkout/success         → CheckoutController@success
+POST /checkout/webhook         → CheckoutController@webhook [sans auth]
+
+GET  /orders                   → AccountController@orders  [auth]
+GET  /orders/{id}              → AccountController@order   [auth]
+GET  /orders/{id}/invoice      → AccountController@invoice [auth]
+
+GET  /account                  → AccountController@index   [auth]
+PATCH /account                 → AccountController@update  [auth]
+POST /account/avatar           → AccountController@avatar  [auth]
+GET  /account/addresses        → AccountController@addresses [auth]
+POST /account/addresses        → AccountController@storeAddress [auth]
+
+GET  /wishlist                 → WishlistController@index  [auth]
+POST /wishlist/{product}       → WishlistController@toggle [auth]
+
+GET  /contact                  → ContactController@index
+POST /contact                  → ContactController@send
+GET  /about                    → PageController@about
+
+GET  /admin/dashboard          → Admin\DashboardController@index [admin]
+GET  /admin/products           → Admin\ProductController@index   [admin]
+...
+```
+
+---
+
+## 9. Endpoints API REST
+
+Destinés exclusivement à l'application **Flutter** (et futurs clients mobiles).
+
+### 9.1 Authentification
 
 ```
 POST   /api/v1/auth/register
 POST   /api/v1/auth/login
-POST   /api/v1/auth/logout                 [auth]
-POST   /api/v1/auth/logout-all             [auth]
-POST   /api/v1/auth/refresh                [auth]
+POST   /api/v1/auth/logout                 [auth:sanctum]
+POST   /api/v1/auth/logout-all             [auth:sanctum]
 POST   /api/v1/auth/forgot-password
 POST   /api/v1/auth/verify-reset-code
 POST   /api/v1/auth/reset-password
-POST   /api/v1/auth/verify-email           [auth]
+POST   /api/v1/auth/verify-email           [auth:sanctum]
 ```
 
-### 8.2 Catalogue (public)
+### 9.2 Catalogue (public)
 
 ```
 GET    /api/v1/products
@@ -492,7 +646,7 @@ GET    /api/v1/brands
 GET    /api/v1/search?q=...
 ```
 
-### 8.3 Panier (mixte invité / connecté)
+### 9.3 Panier (mixte invité / connecté)
 
 ```
 GET    /api/v1/cart
@@ -504,7 +658,7 @@ DELETE /api/v1/cart/coupon
 DELETE /api/v1/cart
 ```
 
-### 8.4 Checkout & Commandes (authentifié)
+### 9.4 Checkout & Commandes (authentifié)
 
 ```
 GET    /api/v1/checkout
@@ -515,7 +669,7 @@ GET    /api/v1/orders/{id}
 GET    /api/v1/orders/{id}/invoice
 ```
 
-### 8.5 Compte client (authentifié)
+### 9.5 Compte client (authentifié)
 
 ```
 GET    /api/v1/account
@@ -534,18 +688,17 @@ PATCH  /api/v1/notifications/{id}/read
 POST   /api/v1/notifications/read-all
 ```
 
-### 8.6 Avis produits (authentifié)
+### 9.6 Avis produits (authentifié)
 
 ```
 GET    /api/v1/products/{product}/reviews
 POST   /api/v1/products/{product}/reviews   [achat vérifié]
 ```
 
-### 8.7 Administration (authentifié — role:admin)
+### 9.7 Administration API (role:admin)
 
 ```
 GET    /api/v1/admin/dashboard
-
 GET    /api/v1/admin/products
 POST   /api/v1/admin/products
 GET    /api/v1/admin/products/{id}
@@ -554,33 +707,26 @@ DELETE /api/v1/admin/products/{id}
 PATCH  /api/v1/admin/products/{id}/stock
 PATCH  /api/v1/admin/products/{id}/status
 GET    /api/v1/admin/products/export
-
 GET    /api/v1/admin/categories
 POST   /api/v1/admin/categories
 PATCH  /api/v1/admin/categories/{id}
 DELETE /api/v1/admin/categories/{id}
-
 GET    /api/v1/admin/orders
 GET    /api/v1/admin/orders/{id}
 PATCH  /api/v1/admin/orders/{id}/status
 GET    /api/v1/admin/orders/export
-
 GET    /api/v1/admin/users
 GET    /api/v1/admin/users/{id}
 PATCH  /api/v1/admin/users/{id}/toggle-active
-
 GET    /api/v1/admin/coupons
 POST   /api/v1/admin/coupons
 PATCH  /api/v1/admin/coupons/{id}
 DELETE /api/v1/admin/coupons/{id}
-
 GET    /api/v1/admin/reviews
 PATCH  /api/v1/admin/reviews/{id}/approve
 DELETE /api/v1/admin/reviews/{id}
-
 GET    /api/v1/admin/settings
 PATCH  /api/v1/admin/settings
-
 GET    /api/v1/admin/reports/sales
 GET    /api/v1/admin/reports/products
 GET    /api/v1/admin/reports/customers
@@ -589,9 +735,9 @@ GET    /api/v1/admin/reports/stock
 
 ---
 
-## 9. Notifications & Communication
+## 10. Notifications & Communication
 
-### 9.1 Notifications push (Firebase FCM)
+### 10.1 Notifications push (Firebase FCM)
 
 Envoyées via `PushNotificationService` qui appelle l'API FCM HTTP v1.
 
@@ -601,10 +747,10 @@ Envoyées via `PushNotificationService` qui appelle l'API FCM HTTP v1.
 | Commande expédiée | "C'est parti !" | "Votre commande est en chemin. Suivi : XXXXX" |
 | Commande livrée | "Livraison effectuée" | "Votre commande a bien été livrée" |
 | Commande annulée | "Commande annulée" | "Votre commande CMD-XXXXX a été annulée" |
-| Rupture de stock | "Retour en stock !" | "{Produit} est à nouveau disponible" |
+| Retour en stock | "Retour en stock !" | "{Produit} est à nouveau disponible" |
 | Promo | "Offre spéciale" | Message configurable depuis l'admin |
 
-### 9.2 Emails transactionnels
+### 10.2 Emails transactionnels
 
 | Email | Déclencheur |
 |-------|-------------|
@@ -612,7 +758,7 @@ Envoyées via `PushNotificationService` qui appelle l'API FCM HTTP v1.
 | Vérification email | Inscription |
 | Confirmation de commande | `OrderPlaced` |
 | Expédition + numéro de suivi | `OrderShipped` |
-| Réinitialisation mot de passe | OTP reset |
+| Réinitialisation mot de passe | Reset (lien web / OTP mobile) |
 | Facture PDF | Demande client ou confirmation livraison |
 | Alerte rupture de stock | Commande Artisan quotidienne (admin) |
 
@@ -620,7 +766,7 @@ Tous les emails sont envoyés via Laravel Queue (Redis) de manière asynchrone.
 
 ---
 
-## 10. Performances & Cache
+## 11. Performances & Cache
 
 | Stratégie | Implémentation | TTL |
 |-----------|---------------|-----|
@@ -632,56 +778,60 @@ Tous les emails sont envoyés via Laravel Queue (Redis) de manière asynchrone.
 | rating_avg | Dénormalisé sur products (pas de sous-requête à chaque appel) | — |
 | Queue | Emails et push notifications en asynchrone via Redis | — |
 | Eager loading | `with(['category', 'images', 'attributes'])` pour éviter N+1 | — |
+| Assets Blade | Vite en production (CSS/JS minifiés, hachés) | — |
 
 ---
 
-## 11. Tests
+## 12. Tests
 
-### 11.1 Tests unitaires (Unit)
+### 12.1 Tests unitaires (Unit)
 
 - `CartService` : calcul des totaux avec/sans coupon, avec/sans frais de port
 - `OrderService` : création commande, calcul TVA, application coupon
 - `StockService` : vérification disponibilité, décrémentation
 - `PushNotificationService` : formation du payload FCM
 
-### 11.2 Tests fonctionnels (Feature)
+### 12.2 Tests fonctionnels (Feature)
 
-- Auth : inscription, login, logout, OTP reset, multi-device
-- Catalogue : listing avec filtres, fiche produit, recherche
+- Auth web : inscription, login, logout, reset mot de passe
+- Auth API : inscription, login multi-device Sanctum, OTP reset
+- Catalogue web : listing, fiche produit, filtres, recherche
+- Catalogue API : mêmes cas, format JSON
 - Panier : ajout, modification, suppression, coupon, fusion invité→connecté
-- Checkout : création commande, webhook Stripe
+- Checkout web et API : création commande, webhook Stripe
 - Commandes : historique, détail, ownership (accès interdit si pas le bon user)
 - Admin : toutes les routes retournent 403 pour un `role:customer`
 - Dashboard : structure JSON des métriques
 - Changement de statut commande → Event déclenché → Email envoyé
 
-### 11.3 Objectif de couverture
+### 12.3 Objectif de couverture
 
 - Couverture minimale : **70%** sur les Services critiques
 - 0 test en échec en environnement CI/CD
 
 ---
 
-## 12. Planning de développement
+## 13. Planning de développement
 
 | Sprint | Durée | Livrables |
 |--------|-------|-----------|
-| **Sprint 1** — Foundation | 1 semaine | Installation Laravel 13, config MySQL + Redis, migrations complètes, seeders, Sanctum, CORS |
-| **Sprint 2** — Catalogue | 1-2 semaines | Models Product/Category/Brand/Attribute, API Resources, endpoints catalogue publics, upload images |
-| **Sprint 3** — Auth & Compte | 1 semaine | Register, login multi-device, OTP reset, profil, adresses, wishlist |
-| **Sprint 4** — Panier & Checkout | 1-2 semaines | CartService, CheckoutController, Stripe PaymentIntent, webhook, génération PDF facture |
-| **Sprint 5** — Notifications | 1 semaine | FCM push (PushNotificationService), emails transactionnels, Queue Redis, Events/Listeners |
-| **Sprint 6** — Administration | 1-2 semaines | Dashboard métriques, CRUD admin, gestion commandes/users/coupons, rapports, exports CSV |
-| **Sprint 7** — Optimisation & Tests | 1 semaine | Cache Redis, index DB, PHPUnit/Pest (coverage 70%), audit sécurité |
-| **Sprint 8** — Recette & Deploy | 1 semaine | Tests intégration avec app Flutter, corrections, documentation API, déploiement production |
+| **Sprint 1** — Foundation | 1 semaine | Installation Laravel 13, config MySQL + Redis, migrations complètes, seeders, Sanctum, CORS, Vite |
+| **Sprint 2** — Catalogue web | 1-2 semaines | Intégration HTML→Blade (home, shop, fiche produit), Models, upload images, cache |
+| **Sprint 3** — Auth & Compte | 1 semaine | Auth web (sessions), Auth API (Sanctum), profil, adresses, wishlist |
+| **Sprint 4** — Panier & Checkout | 1-2 semaines | CartService, Blade cart/checkout, API cart/checkout, Stripe, PDF facture |
+| **Sprint 5** — Notifications | 1 semaine | FCM push, emails transactionnels, Queue Redis, Events/Listeners |
+| **Sprint 6** — Administration | 1-2 semaines | Dashboard Blade admin, CRUD produits/commandes/users/coupons, rapports, exports CSV |
+| **Sprint 7** — API Flutter | 1 semaine | Finalisation tous les endpoints API, API Resources, format JSON uniforme |
+| **Sprint 8** — Optimisation & Tests | 1 semaine | Cache Redis, index DB, PHPUnit/Pest (coverage 70%), audit sécurité |
+| **Sprint 9** — Recette & Deploy | 1 semaine | Tests intégration Flutter + web, corrections, documentation, déploiement production |
 
-**Durée totale estimée : 8 à 10 semaines**
+**Durée totale estimée : 9 à 11 semaines**
 
 ---
 
-## 13. Livrables
+## 14. Livrables
 
-### 13.1 Code source
+### 14.1 Code source
 
 - Dépôt Git avec branches `main`, `develop`, `feature/*`
 - Migrations Laravel complètes (ordre respecté, rollback fonctionnel)
@@ -689,19 +839,19 @@ Tous les emails sont envoyés via Laravel Queue (Redis) de manière asynchrone.
 - Factories pour tous les models
 - Fichier `.env.example` avec toutes les variables documentées
 
-### 13.2 Documentation API
+### 14.2 Documentation API
 
 - Collection **Postman** complète (tous les endpoints, exemples de body, exemples de réponse)
 - Ou documentation **Swagger / OpenAPI 3.0** générée via `darkaonline/l5-swagger`
 
-### 13.3 Documentation technique
+### 14.3 Documentation technique
 
 - `README.md` : installation, prérequis, variables d'environnement, lancement
-- `DEPLOY.md` : guide de déploiement en production (Nginx, PHP-FPM, Supervisor pour les queues)
+- `DEPLOY.md` : guide de déploiement en production (Nginx, PHP-FPM, Supervisor)
 - Documentation des Events et leur payload (pour le développeur Flutter)
 - Guide d'intégration Flutter : authentification, gestion des tokens, format des erreurs
 
-### 13.4 Infrastructure
+### 14.4 Infrastructure
 
 - Configuration Nginx recommandée
 - Configuration Supervisor pour les workers Queue
@@ -710,15 +860,18 @@ Tous les emails sont envoyés via Laravel Queue (Redis) de manière asynchrone.
 
 ---
 
-## 14. Critères d'acceptation
+## 15. Critères d'acceptation
 
 | Critère | Condition de validation | Priorité |
 |---------|------------------------|----------|
 | Sécurité | Aucune faille OWASP top 10 — Policies sur toutes les ressources sensibles | Critique |
+| Fidélité visuelle | Site web identique aux templates HTML fournis | Critique |
 | Auth mobile | Token Sanctum fonctionnel sur Flutter iOS et Android | Critique |
-| Parcours commande | Panier → paiement Stripe → confirmation → email → push — sans erreur | Critique |
+| Auth web | Session Laravel fonctionnelle (login, register, reset) | Critique |
+| Parcours commande web | Panier → paiement Stripe → confirmation → email — sans erreur | Critique |
+| Parcours commande API | Même parcours via Flutter — sans erreur | Critique |
 | Admin | Tous les CRUD admin fonctionnels et sécurisés (403 pour les clients) | Haute |
-| Performance | Endpoints catalogue < 200 ms avec cache Redis activé | Haute |
+| Performance | Pages catalogue < 200 ms avec cache Redis activé | Haute |
 | Tests | 0 test en échec — couverture ≥ 70% sur les Services | Haute |
 | Multi-device | Un utilisateur connecté sur 3 devices simultanément sans conflit | Haute |
 | Format API | Toutes les réponses respectent le format standard (success, data, meta) | Haute |
@@ -728,5 +881,5 @@ Tous les emails sont envoyés via Laravel Queue (Redis) de manière asynchrone.
 
 ---
 
-*Document version 1.0 — Mars 2026*
+*Document version 2.0 — Mars 2026*
 *Toute modification majeure du périmètre fera l'objet d'un avenant.*
