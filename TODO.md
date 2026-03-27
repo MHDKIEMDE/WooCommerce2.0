@@ -8,9 +8,9 @@
 
 | Couche          | Progression |
 |-----------------|-------------|
-| Backend API     | █████░░░░░ 55% |
-| Frontend Blade  | ████░░░░░░ 40% |
-| Global          | ████░░░░░░ ~47% |
+| Backend API     | ███████░░░ 68% |
+| Frontend Blade  | █████░░░░░ 50% |
+| Global          | ██████░░░░ ~59% |
 
 ---
 
@@ -97,40 +97,40 @@
 ## SPRINT 4 — Panier & Checkout (semaine 5-6)
 
 ### Backend Services
-- [ ] `CartService` :
-  - [ ] `getCart()` — session (invité) ou BDD (connecté)
-  - [ ] `addItem()` — vérif stock, variante
-  - [ ] `updateItem()` — quantité
-  - [ ] `removeItem()`
-  - [ ] `clear()`
-  - [ ] `mergeGuestCart()` — fusion au login
-  - [ ] `applyCoupon()` — valider code
-  - [ ] `removeCoupon()`
-  - [ ] `calculateTotals()` — sous-total, TVA, frais port, réduction, total
-- [ ] `CouponService` — validation (type, montant min, expiration, limite)
-- [ ] `StockService` — `check()`, `decrement()`
-- [ ] `OrderService` :
-  - [ ] `createFromCart()` — snapshot produit JSON
-  - [ ] `generateOrderNumber()` — CMD-2026-XXXXX
-  - [ ] `calculateTax()`
-  - [ ] `applyDiscount()`
-- [ ] Logique `CartController` API (utilise CartService)
-- [ ] Logique `CheckoutController@index` — résumé panier
-- [ ] Logique `CheckoutController@store` — créer commande + PaymentIntent Stripe
-- [ ] Logique `CheckoutController@webhook` — vérif signature Stripe
-- [ ] Event `PaymentConfirmed` → décrémente stock
-- [ ] Event `OrderPlaced`
-- [ ] `OrderResource` / `OrderItemResource`
-- [ ] `CartResource`
-- [ ] `CouponResource`
+- [x] `CartService` :
+  - [x] `getCart()` — session (invité) ou BDD (connecté)
+  - [x] `addItem()` — vérif stock, variante
+  - [x] `updateItem()` — quantité
+  - [x] `removeItem()`
+  - [x] `clear()`
+  - [x] `mergeGuestCart()` — fusion au login
+  - [x] `applyCoupon()` — valider code
+  - [x] `removeCoupon()`
+  - [x] `calculateTotals()` — sous-total, TVA, frais port, réduction, total
+- [x] `CouponService` — validation (type, montant min, expiration, limite)
+- [x] `StockService` — `check()`, `decrement()`
+- [x] `OrderService` :
+  - [x] `createFromCart()` — snapshot produit JSON
+  - [x] `generateOrderNumber()` — CMD-2026-XXXXX
+  - [x] `calculateTax()`
+  - [x] `applyDiscount()`
+- [x] Logique `CartController` API (utilise CartService)
+- [x] Logique `CheckoutController@index` — résumé panier
+- [x] Logique `CheckoutController@store` — créer commande + PaymentIntent Stripe
+- [x] Logique `CheckoutController@webhook` — vérif signature Stripe
+- [x] Event `PaymentConfirmed` → décrémente stock
+- [x] Event `OrderPlaced`
+- [x] `OrderResource` / `OrderItemResource`
+- [x] `CartResource`
+- [x] `CouponResource`
 - [ ] PDF Facture — DomPDF (OrderController@invoice)
 - [ ] Form Requests : `StoreCheckoutRequest`, `CartItemRequest`, `CouponRequest`
 
 ### Frontend Blade
-- [ ] Routes web panier et checkout
-- [ ] `CartController` (web) — utilise CartService
+- [x] Routes web panier et checkout
+- [x] `CartController` (web) — utilise CartService
 - [ ] `CheckoutController` (web) — tunnel Blade
-- [ ] Intégration `cart.html` → panier dynamique (sessions)
+- [x] Intégration `cart.html` → panier dynamique (sessions)
 - [ ] Intégration checkout → tunnel multi-étapes (adresse → paiement → confirmation)
 - [ ] Stripe.js — intégration paiement web côté client
 - [ ] Page confirmation commande (success)
@@ -273,7 +273,7 @@
 | 1      | Foundation                | Semaine 1 | ✅ Terminé   |
 | 2      | Catalogue Web             | Sem. 2-3  | 🔄 Partiel   |
 | 3      | Auth & Compte             | Sem. 4    | 🔄 Partiel   |
-| 4      | Panier & Checkout         | Sem. 5-6  | ⬜ À faire   |
+| 4      | Panier & Checkout         | Sem. 5-6  | 🔄 Partiel   |
 | 5      | Notifications             | Sem. 7    | ⬜ À faire   |
 | 6      | Administration            | Sem. 8-9  | ⬜ À faire   |
 | 7      | API Flutter Finalisation  | Sem. 10   | ⬜ À faire   |

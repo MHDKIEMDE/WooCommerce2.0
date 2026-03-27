@@ -2,10 +2,13 @@
 
 namespace App\Providers;
 
+use App\Events\PaymentConfirmed;
+use App\Listeners\DecrementStockOnPayment;
 use App\Models\Product;
 use App\Observers\ProductObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -28,6 +31,8 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
         Product::observe(ProductObserver::class);
+
+        Event::listen(PaymentConfirmed::class, DecrementStockOnPayment::class);
 
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());

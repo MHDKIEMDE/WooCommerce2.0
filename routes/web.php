@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\AuthController as WebAuthController;
+use App\Http\Controllers\Web\CartController as WebCartController;
 use App\Http\Controllers\Web\ShopController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +38,14 @@ Route::middleware('guest')->group(function () {
 
 // ── Déconnexion (authentifié) ─────────────────────────────────────────────
 Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+// ── Panier (accessible invité + connecté) ────────────────────────────────
+Route::get('/cart',              [WebCartController::class, 'index'])->name('cart.index');
+Route::post('/cart/add',         [WebCartController::class, 'add'])->name('cart.add');
+Route::patch('/cart/{id}',       [WebCartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/{id}',      [WebCartController::class, 'remove'])->name('cart.remove');
+Route::post('/cart/coupon',      [WebCartController::class, 'applyCoupon'])->name('cart.coupon');
+Route::delete('/cart/coupon',    [WebCartController::class, 'removeCoupon'])->name('cart.coupon.remove');
 
 // ── Pages statiques ───────────────────────────────────────────────────────
 Route::view('/contact', 'contact')->name('contact');
