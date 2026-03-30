@@ -65,8 +65,8 @@
                 <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                     <div class="navbar-nav mx-auto">
                         <a href="{{ route('home') }}" class="nav-item nav-link active">Accueil</a>
-                        <a href="{{ route('home.boutique') }}" class="nav-item nav-link">Boutique</a>
-                        <a href="{{ route('home.cart') }}" class="nav-item nav-link">Panier</a>
+                        <a href="{{ route('shop.index') }}" class="nav-item nav-link">Boutique</a>
+                        <a href="{{ route('cart.index') }}" class="nav-item nav-link">Panier</a>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0 bg-secondary rounded-0">
@@ -74,7 +74,7 @@
                                 <a href="{{ route('testimonial.index') }}" class="dropdown-item">Témoignage</a>
                             </div>
                         </div>
-                        <a href="{{ route('home.contact') }}" class="nav-item nav-link">Contact</a>
+                        <a href="{{ route('contact') }}" class="nav-item nav-link">Contact</a>
                     </div>
                     <div class="d-flex m-3 me-0">
                         <button
@@ -82,7 +82,7 @@
                             data-bs-toggle="modal" data-bs-target="#searchModal"><i
                                 class="fas fa-search text-primary"></i>
                         </button>
-                        <a href="{{ route('home.cart') }}" class="position-relative me-4 my-auto">
+                        <a href="{{ route('cart.index') }}" class="position-relative me-4 my-auto">
                             <i class="fa fa-shopping-bag fa-2x"></i>
                             <span
                                 class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"

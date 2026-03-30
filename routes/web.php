@@ -50,3 +50,10 @@ Route::delete('/cart/coupon',    [WebCartController::class, 'removeCoupon'])->na
 // ── Pages statiques ───────────────────────────────────────────────────────
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/about', 'about')->name('about');
+Route::view('/checkout', 'checkout')->name('home.checkout');
+Route::view('/testimonial', 'testimonial')->name('testimonial.index');
+
+// ── Profil utilisateur ────────────────────────────────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::view('/profile', 'profile')->name('user.profile');
+});
