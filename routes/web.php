@@ -3,6 +3,11 @@
 use App\Http\Controllers\Web\AuthController as WebAuthController;
 use App\Http\Controllers\Web\CartController as WebCartController;
 use App\Http\Controllers\Web\ShopController;
+use App\Http\Controllers\Web\Admin\SlideController;
+use App\Http\Controllers\Web\Admin\TestimonialController as AdminTestimonialController;
+use App\Http\Controllers\Web\Admin\PromotionController;
+use App\Http\Controllers\Web\Admin\HomeSettingsController;
+use App\Http\Controllers\Web\TestimonialController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -51,9 +56,18 @@ Route::delete('/cart/coupon',    [WebCartController::class, 'removeCoupon'])->na
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/about', 'about')->name('about');
 Route::view('/checkout', 'checkout')->name('home.checkout');
-Route::view('/testimonial', 'testimonial')->name('testimonial.index');
+Route::get('/testimonial', [TestimonialController::class, 'index'])->name('testimonial.index');
 
 // ── Profil utilisateur ────────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
     Route::view('/profile', 'profile')->name('user.profile');
+});
+
+// ── Dashboard Admin — Carrousel Slides ───────────────────────────────────
+Route::middleware('auth')->prefix('dashboard')->name('admin.')->group(function () {
+    Route::resource('slides', SlideController::class);
+    Route::resource('testimonials', AdminTestimonialController::class)->except(['show']);
+    Route::resource('promotions', PromotionController::class)->except(['show']);
+    Route::get('home-settings', [HomeSettingsController::class, 'edit'])->name('home-settings.edit');
+    Route::put('home-settings', [HomeSettingsController::class, 'update'])->name('home-settings.update');
 });

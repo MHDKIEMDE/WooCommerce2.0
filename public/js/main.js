@@ -81,6 +81,8 @@
     // vegetable carousel
     $(".vegetable-carousel").owlCarousel({
         autoplay: true,
+        autoplayHoverPause: true,
+        autoplayTimeout: 3000,
         smartSpeed: 1500,
         center: false,
         dots: true,

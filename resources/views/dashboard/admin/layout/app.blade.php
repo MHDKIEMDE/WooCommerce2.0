@@ -133,6 +133,23 @@
                                     categories</a>
                             </nav>
                         </div>
+                        <div class="sb-sidenav-menu-heading">Vitrine</div>
+                        <a class="nav-link" href="{{ route('admin.slides.index') }}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-images"></i></div>
+                            Carrousel (Slides)
+                        </a>
+                        <a class="nav-link" href="{{ route('admin.testimonials.index') }}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-comments"></i></div>
+                            Témoignages
+                        </a>
+                        <a class="nav-link" href="{{ route('admin.promotions.index') }}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-tags"></i></div>
+                            Promotions
+                        </a>
+                        <a class="nav-link" href="{{ route('admin.home-settings.edit') }}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-cog"></i></div>
+                            Bannière & Stats
+                        </a>
                         <div class="sb-sidenav-menu-heading">Gestion des utilisateurs</div>
                         <a class="nav-link" href="charts.html">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>

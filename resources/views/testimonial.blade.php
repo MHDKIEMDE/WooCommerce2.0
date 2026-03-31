@@ -32,19 +32,17 @@
                             </div>
                             <div class="d-flex align-items-center flex-nowrap">
                                 <div class="bg-secondary rounded">
-                                    <img src="img/testimonial-1.jpg" class="img-fluid rounded"
-                                        style="width: 100px; height: 100px;" alt="">
+                                    <img src="{{ $testimonial->photo_url }}" class="img-fluid rounded"
+                                        style="width:100px;height:100px;object-fit:cover;" alt="{{ $testimonial->name }}">
                                 </div>
                                 <div class="ms-4 d-block">
                                     <h4 class="text-dark">{{ $testimonial->name }}</h4>
                                     {{-- {{ auth()->user()->name }}--}}
                                     <p class="m-0 pb-3">{{ $testimonial->profession }}</p>
                                     <div class="d-flex pe-5">
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star text-primary"></i>
-                                        <i class="fas fa-star"></i>
+                                        @for($i = 1; $i <= 5; $i++)
+                                        <i class="fas fa-star {{ $i <= $testimonial->rating ? 'text-primary' : 'text-muted' }}"></i>
+                                        @endfor
                                     </div>
                                 </div>
                             </div>

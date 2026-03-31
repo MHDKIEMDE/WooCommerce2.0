@@ -15,7 +15,7 @@ class Product extends Model
         'price', 'compare_price', 'cost_price', 'sku',
         'stock_quantity', 'low_stock_threshold',
         'category_id', 'brand_id', 'status', 'featured',
-        'rating_avg', 'rating_count', 'weight', 'unit', 'vat_rate',
+        'rating_avg', 'rating_count', 'views_count', 'weight', 'unit', 'vat_rate',
         'meta_title', 'meta_description',
     ];
 

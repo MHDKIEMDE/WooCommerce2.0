@@ -123,6 +123,21 @@
         </div>
     </div>
     <!-- Modal Search End -->
+
+    {{-- Flash messages --}}
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+    @if($errors->has('cart'))
+    <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+        {{ $errors->first('cart') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
     @yield('content')
     <!-- Footer Start -->
     <div class="container-fluid bg-dark text-white-50 footer pt-5 mt-5">

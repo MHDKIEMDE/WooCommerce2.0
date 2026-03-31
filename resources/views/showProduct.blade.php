@@ -108,42 +108,49 @@
 
                             <p class="mb-4">{{ $product->short_description }}</p>
 
-                            {{-- Variantes --}}
-                            @if($product->variants->isNotEmpty())
-                            <div class="mb-3">
-                                <label class="fw-bold mb-2">Variante :</label>
-                                <select class="form-select w-auto">
-                                    @foreach($product->variants->where('is_active', true) as $variant)
-                                    <option value="{{ $variant->id }}">
-                                        {{ $variant->name }}
-                                        @if($variant->price_modifier != 0)
-                                        ({{ $variant->price_modifier > 0 ? '+' : '' }}{{ number_format($variant->price_modifier, 2) }} €)
-                                        @endif
-                                    </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            @endif
+                            {{-- Formulaire ajout au panier --}}
+                            <form action="{{ route('cart.add') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                            {{-- Quantité + panier --}}
-                            <div class="d-flex align-items-center gap-3 mb-4">
-                                <div class="input-group quantity" style="width: 110px;">
-                                    <div class="input-group-btn">
-                                        <button class="btn btn-sm btn-minus rounded-circle bg-light border" type="button">
-                                            <i class="fa fa-minus"></i>
-                                        </button>
-                                    </div>
-                                    <input type="text" class="form-control form-control-sm text-center border-0" value="1" min="1" id="qty-input">
-                                    <div class="input-group-btn">
-                                        <button class="btn btn-sm btn-plus rounded-circle bg-light border" type="button">
-                                            <i class="fa fa-plus"></i>
-                                        </button>
-                                    </div>
+                                {{-- Variantes --}}
+                                @if($product->variants->isNotEmpty())
+                                <div class="mb-3">
+                                    <label class="fw-bold mb-2">Variante :</label>
+                                    <select name="variant_id" class="form-select w-auto">
+                                        @foreach($product->variants->where('is_active', true) as $variant)
+                                        <option value="{{ $variant->id }}">
+                                            {{ $variant->name }}
+                                            @if($variant->price_modifier != 0)
+                                            ({{ $variant->price_modifier > 0 ? '+' : '' }}{{ number_format($variant->price_modifier, 2) }} €)
+                                            @endif
+                                        </option>
+                                        @endforeach
+                                    </select>
                                 </div>
-                                <a href="#" class="btn border border-secondary rounded-pill px-4 py-2 text-primary">
-                                    <i class="fa fa-shopping-bag me-2 text-primary"></i>Ajouter au panier
-                                </a>
-                            </div>
+                                @endif
+
+                                {{-- Quantité + bouton --}}
+                                <div class="d-flex align-items-center gap-3 mb-4">
+                                    <div class="input-group quantity" style="width: 110px;">
+                                        <div class="input-group-btn">
+                                            <button class="btn btn-sm btn-minus rounded-circle bg-light border" type="button">
+                                                <i class="fa fa-minus"></i>
+                                            </button>
+                                        </div>
+                                        <input type="number" name="quantity" class="form-control form-control-sm text-center border-0" value="1" min="1" max="{{ $product->stock_quantity }}" id="qty-input">
+                                        <div class="input-group-btn">
+                                            <button class="btn btn-sm btn-plus rounded-circle bg-light border" type="button">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn border border-secondary rounded-pill px-4 py-2 text-primary"
+                                        {{ $product->stock_quantity <= 0 ? 'disabled' : '' }}>
+                                        <i class="fa fa-shopping-bag me-2 text-primary"></i>Ajouter au panier
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
 

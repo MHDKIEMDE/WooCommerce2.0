@@ -6,8 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Promotion;
+use App\Models\Setting;
+use App\Models\Slide;
+use App\Models\Testimonial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class ShopController extends Controller
 {
@@ -22,11 +27,13 @@ class ShopController extends Controller
                 ->get();
         });
 
-        $categories = Cache::remember('categories:all', now()->addMinutes(60), function () {
+        $categories = Cache::remember('home:categories:top5', now()->addMinutes(30), function () {
             return Category::whereNull('parent_id')
                 ->where('is_active', true)
-                ->orderBy('sort_order')
-                ->take(6)
+                ->withCount(['products' => fn ($q) => $q->where('status', 'active')])
+                ->having('products_count', '>', 0)
+                ->orderByDesc('products_count')
+                ->take(5)
                 ->get();
         });
 
@@ -38,7 +45,33 @@ class ShopController extends Controller
                 ->get();
         });
 
-        return view('home', compact('featured', 'categories', 'newArrivals'));
+        $slides = Cache::remember('home:slides', now()->addMinutes(30), function () {
+            return Slide::active()->get();
+        });
+
+        $bestsellers = Cache::remember('web:home:bestsellers', now()->addMinutes(15), function () {
+            return Product::with(['images', 'category'])
+                ->where('status', 'active')
+                ->orderByDesc('views_count')
+                ->take(6)
+                ->get();
+        });
+
+        $testimonials = Cache::remember('home:testimonials', now()->addMinutes(30), function () {
+            return Testimonial::active()->take(6)->get();
+        });
+
+        $promotions = Cache::remember('home:promotions', now()->addMinutes(30), function () {
+            return Promotion::active()->take(3)->get();
+        });
+
+        $banner = Setting::getGroup('banner');
+        $stats  = Setting::getGroup('stats');
+
+        return view('home', compact(
+            'featured', 'categories', 'newArrivals', 'slides',
+            'bestsellers', 'testimonials', 'promotions', 'banner', 'stats'
+        ));
     }
 
     public function index(Request $request)
@@ -97,6 +130,15 @@ class ShopController extends Controller
                 ->where('status', 'active')
                 ->firstOrFail();
         });
+
+        // Incrémenter les vues une seule fois par session par produit
+        $sessionKey = "viewed_product_{$product->id}";
+        if (! session()->has($sessionKey)) {
+            DB::table('products')->where('id', $product->id)->increment('views_count');
+            session()->put($sessionKey, true);
+            Cache::forget("web:product:{$slug}");
+            Cache::forget('web:home:bestsellers');
+        }
 
         $related = Cache::remember("web:related:{$slug}", now()->addMinutes(10), function () use ($product) {
             return Product::with(['images'])
