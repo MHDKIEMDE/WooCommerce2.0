@@ -1,228 +1,221 @@
 @extends('layouts.app')
-@section('Agribusiness Shop', 'Payment')
+@section('Agribusiness Shop', 'Paiement')
 @section('content')
-    <!-- Single Page Header start -->
+
+    <!-- En-tête -->
     <div class="container-fluid page-header py-5">
-        <h1 class="text-center text-white display-6">Payment</h1>
+        <h1 class="text-center text-white display-6">Finaliser la commande</h1>
         <ol class="breadcrumb justify-content-center mb-0">
-            <li class="breadcrumb-item"><a href="#">Accueil</a></li>
-            <li class="breadcrumb-item"><a href="#">Pages</a></li>
-            <li class="breadcrumb-item active text-white">Payment</li>
+            <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-white">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('cart.index') }}" class="text-white">Panier</a></li>
+            <li class="breadcrumb-item active text-white">Paiement</li>
         </ol>
     </div>
-    <!-- Single Page Header End -->
-    <!-- Checkout Page Start -->
+
     <div class="container-fluid py-5">
         <div class="container py-5">
-            <h1 class="mb-4">Données de facturation</h1>
-            <form action="#">
+
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+
+            <form action="{{ route('checkout.store') }}" method="POST">
+                @csrf
                 <div class="row g-5">
+
+                    {{-- ── Colonne gauche : Données de facturation ── --}}
                     <div class="col-md-12 col-lg-6 col-xl-7">
-                        <div class="row">
-                            <div class="col-md-12 col-lg-6">
-                                <div class="form-item w-100">
-                                    <label class="form-label my-3">Nom<sup>*</sup></label>
-                                    <input type="text" class="form-control">
-                                </div>
+                        <h4 class="mb-4">Données de facturation</h4>
+
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="form-label">Prénom <sup class="text-danger">*</sup></label>
+                                <input type="text" name="first_name" class="form-control @error('first_name') is-invalid @enderror"
+                                    value="{{ old('first_name', $user?->name) }}" required>
+                                @error('first_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
-                            <div class="col-md-12 col-lg-6">
-                                <div class="form-item w-100">
-                                    <label class="form-label my-3">Prenom<sup>*</sup></label>
-                                    <input type="text" class="form-control">
-                                </div>
+                            <div class="col-sm-6">
+                                <label class="form-label">Nom <sup class="text-danger">*</sup></label>
+                                <input type="text" name="last_name" class="form-control @error('last_name') is-invalid @enderror"
+                                    value="{{ old('last_name') }}" required>
+                                @error('last_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Adresse <sup class="text-danger">*</sup></label>
+                                <input type="text" name="address" class="form-control @error('address') is-invalid @enderror"
+                                    placeholder="Numéro, rue, quartier…"
+                                    value="{{ old('address') }}" required>
+                                @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label">Ville <sup class="text-danger">*</sup></label>
+                                <input type="text" name="city" class="form-control @error('city') is-invalid @enderror"
+                                    value="{{ old('city') }}" required>
+                                @error('city')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label">Code postal</label>
+                                <input type="text" name="postal_code" class="form-control"
+                                    value="{{ old('postal_code') }}">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Pays <sup class="text-danger">*</sup></label>
+                                <input type="text" name="country" class="form-control @error('country') is-invalid @enderror"
+                                    value="{{ old('country', 'Côte d\'Ivoire') }}" required>
+                                @error('country')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label">Téléphone <sup class="text-danger">*</sup></label>
+                                <input type="tel" name="phone" class="form-control @error('phone') is-invalid @enderror"
+                                    value="{{ old('phone') }}" required>
+                                @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label">Email <sup class="text-danger">*</sup></label>
+                                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
+                                    value="{{ old('email', $user?->email) }}" required>
+                                @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Notes de commande (optionnel)</label>
+                                <textarea name="notes" class="form-control" rows="4"
+                                    placeholder="Instructions de livraison, informations complémentaires…">{{ old('notes') }}</textarea>
                             </div>
                         </div>
-                        <div class="form-item">
-                            <label class="form-label my-3">Address <sup>*</sup></label>
-                            <input type="text" class="form-control" placeholder="House Number Street Name">
+
+                        {{-- Méthode de paiement --}}
+                        <h4 class="mt-5 mb-3">Mode de paiement</h4>
+
+                        <div class="border rounded p-3 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method"
+                                    id="cod" value="cash_on_delivery"
+                                    {{ old('payment_method', 'cash_on_delivery') === 'cash_on_delivery' ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold" for="cod">
+                                    <i class="fas fa-money-bill-wave me-2 text-success"></i>
+                                    Paiement à la livraison
+                                </label>
+                            </div>
+                            <p class="text-muted small ms-4 mb-0 mt-1">
+                                Réglez en espèces au moment de la livraison.
+                            </p>
                         </div>
-                        <div class="form-item">
-                            <label class="form-label my-3">Ville<sup>*</sup></label>
-                            <input type="text" class="form-control">
+
+                        <div class="border rounded p-3 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method"
+                                    id="bank" value="bank_transfer"
+                                    {{ old('payment_method') === 'bank_transfer' ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold" for="bank">
+                                    <i class="fas fa-university me-2 text-primary"></i>
+                                    Virement bancaire
+                                </label>
+                            </div>
+                            <p class="text-muted small ms-4 mb-0 mt-1">
+                                Effectuez votre virement directement depuis votre banque.
+                                Votre commande sera expédiée après réception du paiement.
+                            </p>
                         </div>
-                        <div class="form-item">
-                            <label class="form-label my-3">Pays<sup>*</sup></label>
-                            <input type="text" class="form-control">
-                        </div>
-                        <div class="form-item">
-                            <label class="form-label my-3">code postal<sup>*</sup></label>
-                            <input type="text" class="form-control">
-                        </div>
-                        <div class="form-item">
-                            <label class="form-label my-3">Numero<sup>*</sup></label>
-                            <input type="tel" class="form-control">
-                        </div>
-                        <div class="form-item">
-                            <label class="form-label my-3">Email Address<sup>*</sup></label>
-                            <input type="email" class="form-control">
-                        </div>
-                        <div class="form-check my-3">
-                            <input type="checkbox" class="form-check-input" id="Account-1" name="Accounts" value="Accounts">
-                            <label class="form-check-label" for="Account-1">Créer un compte ?</label>
-                        </div>
-                        <hr>
-                        <div class="form-check my-3">
-                            <input class="form-check-input" type="checkbox" id="Address-1" name="Address" value="Address">
-                            <label class="form-check-label" for="Address-1">Envoyer à une autre adresse ?</label>
-                        </div>
-                        <div class="form-item">
-                            <textarea name="text" class="form-control" spellcheck="false" cols="30" rows="11"
-                                placeholder="Oreder Notes (Optional)"></textarea>
-                        </div>
+                        @error('payment_method')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
+
+                    {{-- ── Colonne droite : Récapitulatif commande ── --}}
                     <div class="col-md-12 col-lg-6 col-xl-5">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
+                        <div class="bg-light rounded p-4">
+                            <h4 class="mb-4">Récapitulatif</h4>
+
+                            <table class="table table-borderless align-middle">
+                                <thead class="border-bottom">
                                     <tr>
-                                        <th scope="col">Produit</th>
-                                        <th scope="col">Nom</th>
-                                        <th scope="col">Prix</th>
-                                        <th scope="col">Quantité</th>
-                                        <th scope="col">Total</th>
+                                        <th>Produit</th>
+                                        <th class="text-end">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <th scope="row">
-                                            <div class="d-flex align-items-center mt-2">
-                                                <img src="img/vegetable-item-2.jpg" class="img-fluid rounded-circle"
-                                                    style="width: 90px; height: 90px;" alt="">
-                                            </div>
-                                        </th>
-                                        <td class="py-5">Awesome Brocoli</td>
-                                        <td class="py-5">$69.00</td>
-                                        <td class="py-5">2</td>
-                                        <td class="py-5">$138.00</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">
-                                            <div class="d-flex align-items-center mt-2">
-                                                <img src="img/vegetable-item-5.jpg" class="img-fluid rounded-circle"
-                                                    style="width: 90px; height: 90px;" alt="">
-                                            </div>
-                                        </th>
-                                        <td class="py-5">Potatoes</td>
-                                        <td class="py-5">$69.00</td>
-                                        <td class="py-5">2</td>
-                                        <td class="py-5">$138.00</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">
-                                            <div class="d-flex align-items-center mt-2">
-                                                <img src="img/vegetable-item-3.png" class="img-fluid rounded-circle"
-                                                    style="width: 90px; height: 90px;" alt="">
-                                            </div>
-                                        </th>
-                                        <td class="py-5">Big Banana</td>
-                                        <td class="py-5">$69.00</td>
-                                        <td class="py-5">2</td>
-                                        <td class="py-5">$138.00</td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">
-                                        </th>
-                                        <td class="py-5"></td>
-                                        <td class="py-5"></td>
-                                        <td class="py-5">
-                                            <p class="mb-0 text-dark py-3">Subtotal</p>
-                                        </td>
-                                        <td class="py-5">
-                                            <div class="py-3 border-bottom border-top">
-                                                <p class="mb-0 text-dark">$414.00</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">
-                                        </th>
-                                        <td class="py-5">
-                                            <p class="mb-0 text-dark py-4">Shipping</p>
-                                        </td>
-                                        <td colspan="3" class="py-5">
-                                            <div class="form-check text-start">
-                                                <input type="checkbox" class="form-check-input bg-primary border-0"
-                                                    id="Shipping-1" name="Shipping-1" value="Shipping">
-                                                <label class="form-check-label" for="Shipping-1">Free Shipping</label>
-                                            </div>
-                                            <div class="form-check text-start">
-                                                <input type="checkbox" class="form-check-input bg-primary border-0"
-                                                    id="Shipping-2" name="Shipping-1" value="Shipping">
-                                                <label class="form-check-label" for="Shipping-2">Flat rate: $15.00</label>
-                                            </div>
-                                            <div class="form-check text-start">
-                                                <input type="checkbox" class="form-check-input bg-primary border-0"
-                                                    id="Shipping-3" name="Shipping-1" value="Shipping">
-                                                <label class="form-check-label" for="Shipping-3">Local Pickup:
-                                                    $8.00</label>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">
-                                        </th>
-                                        <td class="py-5">
-                                            <p class="mb-0 text-dark text-uppercase py-3">TOTAL</p>
-                                        </td>
-                                        <td class="py-5"></td>
-                                        <td class="py-5"></td>
-                                        <td class="py-5">
-                                            <div class="py-3 border-bottom border-top">
-                                                <p class="mb-0 text-dark">$135.00</p>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    @foreach ($items as $item)
+                                        @php
+                                            $unitPrice = $item->product->price + ($item->variant?->price_modifier ?? 0);
+                                            $lineTotal = $unitPrice * $item->quantity;
+                                        @endphp
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    @php $img = $item->product->images->first(); @endphp
+                                                    @if ($img)
+                                                        <img src="{{ $img->url }}" alt="{{ $item->product->name }}"
+                                                            style="width:48px;height:48px;object-fit:cover;" class="rounded">
+                                                    @endif
+                                                    <div>
+                                                        <div class="fw-semibold" style="font-size:.9rem">{{ $item->product->name }}</div>
+                                                        @if ($item->variant)
+                                                            <small class="text-muted">{{ $item->variant->name }}</small>
+                                                        @endif
+                                                        <div class="text-muted small">× {{ $item->quantity }}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-end">{{ number_format($lineTotal, 0, ',', ' ') }} FCFA</td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
+                                <tfoot class="border-top">
+                                    <tr>
+                                        <td class="text-muted">Sous-total</td>
+                                        <td class="text-end">{{ number_format($totals['subtotal'], 0, ',', ' ') }} FCFA</td>
+                                    </tr>
+                                    @if ($totals['discount'] > 0)
+                                    <tr class="text-success">
+                                        <td>
+                                            Réduction
+                                            @if ($coupon)
+                                                <span class="badge bg-success ms-1">{{ $coupon->code }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end">− {{ number_format($totals['discount'], 0, ',', ' ') }} FCFA</td>
+                                    </tr>
+                                    @endif
+                                    <tr>
+                                        <td class="text-muted">Livraison</td>
+                                        <td class="text-end">
+                                            @if ($totals['shippingCost'] == 0)
+                                                <span class="text-success">Gratuite</span>
+                                            @else
+                                                {{ number_format($totals['shippingCost'], 0, ',', ' ') }} FCFA
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    <tr class="border-top fw-bold">
+                                        <td>Total</td>
+                                        <td class="text-end text-primary fs-5">
+                                            {{ number_format($totals['total'], 0, ',', ' ') }} FCFA
+                                        </td>
+                                    </tr>
+                                </tfoot>
                             </table>
-                        </div>
-                        <div class="row g-4 text-center align-items-center justify-content-center border-bottom py-3">
-                            <div class="col-12">
-                                <div class="form-check text-start my-3">
-                                    <input type="checkbox" class="form-check-input bg-primary border-0" id="Transfer-1"
-                                        name="Transfer" value="Transfer">
-                                    <label class="form-check-label" for="Transfer-1">Direct Bank Transfer</label>
-                                </div>
-                                <p class="text-start text-dark">Make your payment directly into our bank account. Please
-                                    use your Order ID as the payment reference. Your order will not be shipped until the
-                                    funds have cleared in our account.</p>
+
+                            <div class="d-grid mt-3">
+                                <button type="submit" class="btn btn-primary btn-lg py-3">
+                                    <i class="fas fa-lock me-2"></i> Confirmer la commande
+                                </button>
                             </div>
-                        </div>
-                        <div class="row g-4 text-center align-items-center justify-content-center border-bottom py-3">
-                            <div class="col-12">
-                                <div class="form-check text-start my-3">
-                                    <input type="checkbox" class="form-check-input bg-primary border-0" id="Payments-1"
-                                        name="Payments" value="Payments">
-                                    <label class="form-check-label" for="Payments-1">Check Payments</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row g-4 text-center align-items-center justify-content-center border-bottom py-3">
-                            <div class="col-12">
-                                <div class="form-check text-start my-3">
-                                    <input type="checkbox" class="form-check-input bg-primary border-0" id="Delivery-1"
-                                        name="Delivery" value="Delivery">
-                                    <label class="form-check-label" for="Delivery-1">Cash On Delivery</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row g-4 text-center align-items-center justify-content-center border-bottom py-3">
-                            <div class="col-12">
-                                <div class="form-check text-start my-3">
-                                    <input type="checkbox" class="form-check-input bg-primary border-0" id="Paypal-1"
-                                        name="Paypal" value="Paypal">
-                                    <label class="form-check-label" for="Paypal-1">Paypal</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row g-4 text-center align-items-center justify-content-center pt-4">
-                            <button type="button"
-                                class="btn border-secondary py-3 px-4 text-uppercase w-100 text-primary">Place
-                                Order</button>
+                            <p class="text-center text-muted small mt-3">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Vos données sont sécurisées et ne seront jamais partagées.
+                            </p>
                         </div>
                     </div>
+
                 </div>
             </form>
+
         </div>
     </div>
-    <!-- Checkout Page End -->
+
 @endsection

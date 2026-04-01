@@ -42,4 +42,9 @@ return [
         'credentials_path' => env('FCM_CREDENTIALS_PATH', storage_path('app/firebase-credentials.json')),
     ],
 
+    'whatsapp' => [
+        'phone'              => env('WHATSAPP_PHONE'),           // ex: +2250102030405
+        'callmebot_apikey'   => env('WHATSAPP_CALLMEBOT_APIKEY'), // clé générée par CallMeBot
+    ],
+
 ];

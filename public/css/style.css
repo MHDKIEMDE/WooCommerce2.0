@@ -74,6 +74,15 @@
     color: var(--bs-white) !important;
 }
 
+/* Texte toujours blanc sur fond vert (primary) */
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.bg-primary {
+    color: #ffffff !important;
+}
+
 /*** Topbar Start ***/
 .fixed-top {
     transition: 0.5s;
@@ -182,6 +191,14 @@
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;
+}
+
+@media (max-width: 991.98px) {
+    .hero-header,
+    .hero-header .container {
+        padding-top: 0.25rem !important;
+        padding-bottom: 0.25rem !important;
+    }
 }
 
 .carousel-item {
