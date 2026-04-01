@@ -20,7 +20,8 @@ class EnsureUserHasRole
                 ], 403);
             }
 
-            abort(403, 'Accès refusé.');
+            return redirect()->route('home')
+                ->with('error', 'Accès réservé aux administrateurs.');
         }
 
         return $next($request);

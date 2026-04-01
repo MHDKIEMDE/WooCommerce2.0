@@ -70,69 +70,50 @@
             <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
                     <div class="nav">
-                        <div class="sb-sidenav-menu-heading">Space Boutique</div>
-                        <a class="nav-link" href="#">
+                        <div class="sb-sidenav-menu-heading">Tableau de bord</div>
+                        <a class="nav-link" href="{{ route('admin.products.index') }}">
                             <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                             Dashboard
                         </a>
-                        <div class="sb-sidenav-menu-heading">Produits et Categories</div>
+
+                        <div class="sb-sidenav-menu-heading">Catalogue</div>
+
+                        {{-- Produits --}}
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                            data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
-                            <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                            data-bs-target="#collapseProducts" aria-expanded="false" aria-controls="collapseProducts">
+                            <div class="sb-nav-link-icon"><i class="fas fa-box-open"></i></div>
                             Produits
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
-                        <div class="collapse" id="collapsePages" aria-labelledby="headingTwo"
-                            data-bs-parent="#sidenavAccordion">
-                            <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
-                                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                                    data-bs-target="#pagesCollapseAuth" aria-expanded="false"
-                                    aria-controls="pagesCollapseAuth">
-                                    Produit par categorie
-                                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        <div class="collapse" id="collapseProducts" data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="{{ route('admin.products.index') }}">
+                                    <i class="fas fa-list me-1"></i> Liste des produits
                                 </a>
-                                <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne"
-                                    data-bs-parent="#sidenavAccordionPages">
-                                    <nav class="sb-sidenav-menu-nested nav">
-                                        <a class="nav-link" href="{{ route('testimonial.index') }}">testimonials</a>
-                                        <a class="nav-link" href="{{ route('comment.dashboard') }}">Commentes</a>
-                                        {{-- <a class="nav-link" href="{{ route('Commandes.index') }}"></a> --}}
-                                    </nav>
-                                </div>
-
-                                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                                    data-bs-target="#pagesCollapseError" aria-expanded="false"
-                                    aria-controls="pagesCollapseError">
-                                    Gestion des produits
-                                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                <a class="nav-link" href="{{ route('admin.products.create') }}">
+                                    <i class="fas fa-plus me-1"></i> Ajouter un produit
                                 </a>
-                                <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne"
-                                    data-bs-parent="#sidenavAccordionPages">
-                                    <nav class="sb-sidenav-menu-nested nav">
-                                        <a class="nav-link" href="{{ route('produits.create') }}">Ajouter un
-                                            produit</a>
-                                        <a class="nav-link" href="{{ route('produits.index') }}">Voir la listes de
-                                            tous les
-                                            produit</a>
-                                        <a class="nav-link" href="#"></a>
-                                    </nav>
-                                </div>
                             </nav>
                         </div>
+
+                        {{-- Catégories --}}
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                            data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
-                            <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
-                            Categories
+                            data-bs-target="#collapseCategories" aria-expanded="false" aria-controls="collapseCategories">
+                            <div class="sb-nav-link-icon"><i class="fas fa-tags"></i></div>
+                            Catégories
                             <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
                         </a>
-                        <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne"
-                            data-bs-parent="#sidenavAccordion">
+                        <div class="collapse" id="collapseCategories" data-bs-parent="#sidenavAccordion">
                             <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="{{ route('categories.store') }}">Listes des categories</a>
-                                <a class="nav-link" href="{{ route('categories.create') }}">Ajouter une
-                                    categories</a>
+                                <a class="nav-link" href="{{ route('admin.categories.index') }}">
+                                    <i class="fas fa-list me-1"></i> Liste des catégories
+                                </a>
+                                <a class="nav-link" href="{{ route('admin.categories.create') }}">
+                                    <i class="fas fa-plus me-1"></i> Ajouter une catégorie
+                                </a>
                             </nav>
                         </div>
+
                         <div class="sb-sidenav-menu-heading">Vitrine</div>
                         <a class="nav-link" href="{{ route('admin.slides.index') }}">
                             <div class="sb-nav-link-icon"><i class="fas fa-images"></i></div>
@@ -150,6 +131,25 @@
                             <div class="sb-nav-link-icon"><i class="fas fa-cog"></i></div>
                             Bannière & Stats
                         </a>
+
+                        <div class="sb-sidenav-menu-heading">Paramètres</div>
+                        <a class="nav-link" href="{{ route('admin.shop-settings.edit') }}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-store"></i></div>
+                            Boutique
+                        </a>
+                        <a class="nav-link" href="{{ route('admin.theme-settings.edit') }}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-palette"></i></div>
+                            Thème & Couleurs
+                        </a>
+                        <a class="nav-link" href="{{ route('admin.social-settings.edit') }}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-share-alt"></i></div>
+                            Réseaux sociaux
+                        </a>
+                        <a class="nav-link" href="{{ route('admin.notification-settings.edit') }}">
+                            <div class="sb-nav-link-icon"><i class="fab fa-whatsapp"></i></div>
+                            Notifications WhatsApp
+                        </a>
+
                         <div class="sb-sidenav-menu-heading">Gestion des utilisateurs</div>
                         <a class="nav-link" href="charts.html">
                             <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>

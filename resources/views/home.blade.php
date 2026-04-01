@@ -5,18 +5,23 @@
     <div class="container-fluid py-5 mb-5 hero-header">
         <div class="container py-5">
             <div class="row g-5 align-items-center">
-                <div class="col-md-12 col-lg-7">
+                <div class="col-12 col-lg-7 order-2 order-lg-1">
                     <h4 class="mb-3 text-secondary">Aliments 100 % biologiques</h4>
                     <h1 class="mb-5 display-3 text-primary">Aliments biologiques à base de fruits</h1>
-                    <form action="{{ route('shop.search') }}" method="GET" class="position-relative mx-auto">
-                        <input class="form-control border-2 border-secondary w-75 py-3 px-4 rounded-pill"
-                            type="text" name="q" placeholder="Rechercher un produit...">
-                        <button type="submit"
-                            class="btn btn-primary border-2 border-secondary py-3 px-4 position-absolute rounded-pill text-white h-100"
-                            style="top: 0; right: 25%;">Soumettre</button>
+                    <form action="{{ route('shop.search') }}" method="GET">
+                        <div class="position-relative w-100">
+                            <input class="form-control border-2 border-secondary w-100 py-3 ps-4 pe-5 rounded-pill"
+                                type="text" name="q" placeholder="Rechercher un produit...">
+                            <button type="submit"
+                                class="btn btn-primary border-0 position-absolute rounded-pill text-white fw-bold"
+                                style="top: 6px; right: 6px; bottom: 6px; padding: 0 24px;">
+                                <span class="d-none d-sm-inline">Rechercher</span>
+                                <i class="fas fa-search d-inline d-sm-none"></i>
+                            </button>
+                        </div>
                     </form>
                 </div>
-                <div class="col-md-12 col-lg-5">
+                <div class="col-12 col-lg-5 order-1 order-lg-2">
                     <div id="carouselId" class="carousel slide position-relative" data-bs-ride="carousel">
                         <div class="carousel-inner" role="listbox">
                             @forelse($slides as $index => $slide)
@@ -110,6 +115,7 @@
     <!-- Featurs Section End -->
     
     <!-- Fruits Shop Start-->
+    @if($categories->isNotEmpty())
     <div class="container-fluid fruite py-5">
         <div class="container py-5">
             <div class="tab-class text-center">
@@ -224,6 +230,7 @@
             </div>
         </div>
     </div>
+    @endif
     <!-- Fruits Shop End-->
     <!-- Featurs Start -->
     @if($promotions->isNotEmpty())
@@ -258,6 +265,7 @@
     @endif
     <!-- Featurs End -->
     <!-- Vesitable Shop Start-->
+    @if($newArrivals->isNotEmpty())
     <div class="container-fluid vesitable py-5">
         <div class="container py-5">
             <h1 class="mb-0">Nouveautés</h1>
@@ -292,7 +300,7 @@
             </div>
         </div>
     </div>
-    <!-- Vesitable Shop End -->
+    @endif
     <!-- Vesitable Shop End -->
     <!-- Banner Section Start-->
     <div class="container-fluid banner bg-secondary my-5">
@@ -329,18 +337,13 @@
     </div>
     <!-- Banner Section End -->
     <!-- Bestsaler Product Start -->
+    @if($bestsellers->isNotEmpty())
     <div class="container-fluid py-5">
         <div class="container py-5">
             <div class="text-center mx-auto mb-5" style="max-width: 700px;">
                 <h1 class="display-4">Les produits les plus vus</h1>
                 <p>Découvrez les produits que nos clients consultent le plus.</p>
             </div>
-            @if($bestsellers->isEmpty())
-            <div class="text-center py-5">
-                <p class="text-muted">Aucun produit populaire pour le moment.</p>
-                <a href="{{ route('shop.index') }}" class="btn btn-primary rounded-pill px-4">Voir la boutique</a>
-            </div>
-            @else
             <div class="row g-4">
                 @foreach($bestsellers as $bp)
                 @php $bpImg = $bp->images->firstWhere('is_primary', true) ?? $bp->images->first(); @endphp
@@ -395,9 +398,9 @@
                 </div>
                 @endforeach
             </div>
-            @endif
         </div>
     </div>
+    @endif
     <!-- Bestsaler Product End -->
     <!-- Fact Start -->
     <div class="container-fluid py-5">

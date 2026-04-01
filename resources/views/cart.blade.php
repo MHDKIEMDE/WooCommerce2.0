@@ -168,7 +168,7 @@
                             <h5 class="mb-0 fw-bold text-primary">{{ number_format($totals['total'], 2) }} €</h5>
                         </div>
                         <div class="p-4">
-                            <a href="#" class="btn btn-primary rounded-pill w-100 py-2 text-uppercase fw-bold">
+                            <a href="{{ route('checkout.show') }}" class="btn btn-primary rounded-pill w-100 py-2 text-uppercase fw-bold">
                                 Procéder au paiement
                             </a>
                             <a href="{{ route('shop.index') }}" class="btn btn-outline-secondary rounded-pill w-100 py-2 mt-2">

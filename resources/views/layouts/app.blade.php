@@ -24,6 +24,33 @@
     <link rel="stylesheet" href="{{ URL::to('/') }}/css/bootstrap.min.css">
     <!-- Template Stylesheet -->
     <link href="css/style.css" rel="stylesheet">
+    {{-- Thème dynamique --}}
+    @php
+        $theme = \App\Models\Setting::getGroup('theme');
+        $primary        = $theme['primary_color']        ?? '#81C408';
+        $primaryText    = $theme['primary_text_color']   ?? '#ffffff';
+        $secondary      = $theme['secondary_color']      ?? '#FFB524';
+        $secondaryText  = $theme['secondary_text_color'] ?? '#ffffff';
+        $toRgb = fn(string $hex): string => implode(',', array_map('hexdec', str_split(ltrim($hex,'#'), 2)));
+    @endphp
+    <style>
+        :root {
+            --bs-primary:           {{ $primary }};
+            --bs-primary-rgb:       {{ $toRgb($primary) }};
+            --bs-secondary:         {{ $secondary }};
+            --bs-secondary-rgb:     {{ $toRgb($secondary) }};
+        }
+        .btn-primary                              { background-color: {{ $primary }}   !important; border-color: {{ $primary }}   !important; color: {{ $primaryText }}   !important; }
+        .btn-primary:hover,.btn-primary:focus     { background-color: {{ $primary }}cc !important; border-color: {{ $primary }}cc !important; color: {{ $primaryText }}   !important; }
+        .btn-secondary                            { background-color: {{ $secondary }} !important; border-color: {{ $secondary }} !important; color: {{ $secondaryText }} !important; }
+        .btn-secondary:hover,.btn-secondary:focus { background-color: {{ $secondary }}cc !important; border-color: {{ $secondary }}cc !important; color: {{ $secondaryText }} !important; }
+        .text-primary   { color: {{ $primary }}   !important; }
+        .text-secondary { color: {{ $secondary }} !important; }
+        .bg-primary     { background-color: {{ $primary }}   !important; color: {{ $primaryText }}   !important; }
+        .bg-secondary   { background-color: {{ $secondary }} !important; color: {{ $secondaryText }} !important; }
+        .border-primary   { border-color: {{ $primary }}   !important; }
+        .border-secondary { border-color: {{ $secondary }} !important; }
+    </style>
 </head>
 
 <body>
@@ -37,11 +64,16 @@
     <div class="container-fluid fixed-top">
         <div class="container topbar bg-primary d-none d-lg-block">
             <div class="d-flex justify-content-between">
+                @php $shop = $shop ?? \App\Models\Setting::getGroup('shop'); @endphp
                 <div class="top-info ps-2">
-                    <small class="me-3"><i class="fas fa-map-marker-alt me-2 text-secondary"></i> <a href="#"
-                            class="text-white">1200 logement</a></small>
-                    <small class="me-3"><i class="fas fa-envelope me-2 text-secondary"></i><a href="#"
-                            class="text-white">Agribusiness shop</a></small>
+                    @if(!empty($shop['shop_address'] ?? ''))
+                    <small class="me-3"><i class="fas fa-map-marker-alt me-2 text-secondary"></i>
+                        <a href="#" class="text-white">{{ $shop['shop_address'] }}</a></small>
+                    @endif
+                    @if(!empty($shop['shop_email'] ?? ''))
+                    <small class="me-3"><i class="fas fa-envelope me-2 text-secondary"></i>
+                        <a href="mailto:{{ $shop['shop_email'] }}" class="text-white">{{ $shop['shop_email'] }}</a></small>
+                    @endif
                 </div>
                 <div class="top-link pe-2">
                     <a href="#" class="text-white"><small class="text-white mx-2">Politique de
@@ -56,7 +88,7 @@
         <div class="container px-0">
             <nav class="navbar navbar-light bg-white navbar-expand-xl">
                 <a href="{{ route('home') }}" class="navbar-brand">
-                    <h1 class="text-primary display-6">Agribusiness Shop</h1>
+                    <h1 class="text-primary display-6">{{ $shop['shop_name'] ?? config('app.name') }}</h1>
                 </a>
                 <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarCollapse">
@@ -70,7 +102,7 @@
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0 bg-secondary rounded-0">
-                                <a href="{{ route('home.checkout') }}" class="dropdown-item">Checkout</a>
+                                <a href="{{ route('checkout.show') }}" class="dropdown-item">Checkout</a>
                                 <a href="{{ route('testimonial.index') }}" class="dropdown-item">Témoignage</a>
                             </div>
                         </div>
@@ -131,6 +163,12 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     @endif
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
     @if($errors->has('cart'))
     <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
         {{ $errors->first('cart') }}
@@ -145,30 +183,63 @@
             <div class="pb-4 mb-4" style="border-bottom: 1px solid rgba(226, 175, 24, 0.5) ;">
                 <div class="row g-4">
                     <div class="col-lg-3">
-                        <a href="#">
-                            <h1 class="text-primary mb-0">Agribusiness shop</h1>
-                            <p class="text-secondary mb-0">Produit local</p>
+                        @php $shop = \App\Models\Setting::getGroup('shop'); @endphp
+                        <a href="{{ route('home') }}">
+                            <h1 class="text-primary mb-0">{{ $shop['shop_name'] ?? config('app.name') }}</h1>
+                            <p class="text-secondary mb-0">{{ $shop['shop_tagline'] ?? 'Produit local' }}</p>
                         </a>
                     </div>
                     <div class="col-lg-6">
                         <div class="position-relative mx-auto">
-                            <input class="form-control border-0 w-100 py-3 px-4 rounded-pill" type="number"
-                                placeholder="Votre Email">
+                            <input class="form-control border-0 w-100 py-3 ps-4 pe-5 rounded-pill shadow-sm"
+                                type="email" placeholder="Entrez votre adresse email…">
                             <button type="submit"
-                                class="btn btn-primary border-0 border-secondary py-3 px-4 position-absolute rounded-pill text-white"
-                                style="top: 0; right: 0;"></button>
+                                class="btn btn-primary border-0 position-absolute rounded-pill text-white fw-semibold d-flex align-items-center gap-2"
+                                style="top: 6px; right: 6px; bottom: 6px; padding: 0 20px; font-size: .9rem;">
+                                S'abonner
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                    fill="currentColor" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                     <div class="col-lg-3">
-                        <div class="d-flex justify-content-end pt-3">
-                            <a class="btn  btn-outline-secondary me-2 btn-md-square rounded-circle" href="">
-                                <i class="fab fa-twitter"></i></a>
-                            <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i
-                                    class="fab fa-facebook-f"></i></a>
-                            <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i
-                                    class="fab fa-youtube"></i></a>
-                            <a class="btn btn-outline-secondary btn-md-square rounded-circle" href=""><i
-                                    class="fab fa-linkedin-in"></i></a>
+                        @php $social = \App\Models\Setting::getGroup('social'); @endphp
+                        <div class="d-flex justify-content-around justify-content-lg-end pt-3 flex-wrap gap-2">
+                            @if(!empty($social['twitter']))
+                            <a class="btn btn-outline-secondary btn-md-square rounded-circle" href="{{ $social['twitter'] }}" target="_blank" rel="noopener">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 300 300">
+                                    <path d="M178.57 127.15 290.27 0h-26.46l-97.03 110.38L89.34 0H0l117.13 166.93L0 300.25h26.46l102.4-116.59 81.8 116.59h89.34M36.01 19.54H76.66l187.13 262.13h-40.66"/>
+                                </svg>
+                            </a>
+                            @endif
+                            @if(!empty($social['facebook']))
+                            <a class="btn btn-outline-secondary btn-md-square rounded-circle" href="{{ $social['facebook'] }}" target="_blank" rel="noopener">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            @endif
+                            @if(!empty($social['youtube']))
+                            <a class="btn btn-outline-secondary btn-md-square rounded-circle" href="{{ $social['youtube'] }}" target="_blank" rel="noopener">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                            @endif
+                            @if(!empty($social['linkedin']))
+                            <a class="btn btn-outline-secondary btn-md-square rounded-circle" href="{{ $social['linkedin'] }}" target="_blank" rel="noopener">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            @endif
+                            @if(!empty($social['instagram']))
+                            <a class="btn btn-outline-secondary btn-md-square rounded-circle" href="{{ $social['instagram'] }}" target="_blank" rel="noopener">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            @endif
+                            @if(!empty($social['tiktok']))
+                            <a class="btn btn-outline-secondary btn-md-square rounded-circle" href="{{ $social['tiktok'] }}" target="_blank" rel="noopener">
+                                <i class="fab fa-tiktok"></i>
+                            </a>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -226,7 +297,7 @@
             <div class="row">
                 <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
                     <span class="text-light"><a href="#"><i
-                                class="fas fa-copyright text-light me-2"></i>Agribusiness Shop</a>, Tous droits
+                                class="fas fa-copyright text-light me-2"></i>{{ \App\Models\Setting::get('shop_name', config('app.name')) }}</a>, Tous droits
                         réservés.</span>
                 </div>
             </div>
