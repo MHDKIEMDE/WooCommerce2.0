@@ -30,8 +30,8 @@ class ShopController extends Controller
         $categories = Cache::remember('home:categories:top5', now()->addMinutes(30), function () {
             return Category::whereNull('parent_id')
                 ->where('is_active', true)
+                ->whereHas('products', fn ($q) => $q->where('status', 'active'))
                 ->withCount(['products' => fn ($q) => $q->where('status', 'active')])
-                ->having('products_count', '>', 0)
                 ->orderByDesc('products_count')
                 ->take(5)
                 ->get();
