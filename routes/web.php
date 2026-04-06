@@ -87,8 +87,9 @@ Route::middleware('auth')->group(function () {
 
 // ── Dashboard Admin — Carrousel Slides ───────────────────────────────────
 Route::middleware(['auth', 'role:admin,super-admin'])->prefix('dashboard')->name('admin.')->group(function () {
-    Route::get('/',      [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('users',  [AdminUserController::class, 'index'])->name('users.index');
+    Route::get('/',             [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('users',         [AdminUserController::class, 'index'])->name('users.index');
+    Route::get('charts.html',   fn () => redirect()->route('admin.users.index'))->name('charts.redirect');
     Route::patch('users/{user}/toggle', [AdminUserController::class, 'toggleStatus'])->name('users.toggle');
     Route::resource('slides', SlideController::class);
     Route::resource('testimonials', AdminTestimonialController::class)->except(['show']);

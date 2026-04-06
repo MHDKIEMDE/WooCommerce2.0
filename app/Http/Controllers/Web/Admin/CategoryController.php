@@ -49,6 +49,7 @@ class CategoryController extends Controller
         unset($data['image']);
         Category::create($data);
         Cache::forget('categories:all');
+        Cache::forget('categories:with_products');
         Cache::forget('home:categories:top5');
 
         return redirect()->route('admin.categories.index')
@@ -88,6 +89,7 @@ class CategoryController extends Controller
         unset($data['image']);
         $category->update($data);
         Cache::forget('categories:all');
+        Cache::forget('categories:with_products');
         Cache::forget('home:categories:top5');
 
         return redirect()->route('admin.categories.index')
@@ -98,6 +100,7 @@ class CategoryController extends Controller
     {
         $category->delete();
         Cache::forget('categories:all');
+        Cache::forget('categories:with_products');
         Cache::forget('home:categories:top5');
 
         return redirect()->route('admin.categories.index')
