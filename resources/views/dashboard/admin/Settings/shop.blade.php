@@ -77,14 +77,50 @@
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Devise</label>
-                            <div class="input-group" style="max-width:200px">
-                                <span class="input-group-text"><i class="fas fa-coins"></i></span>
+                        <hr>
+                        <h6 class="fw-bold mb-3"><i class="fas fa-coins text-primary me-2"></i>Devise & Format des prix</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-4">
+                                <label class="form-label fw-semibold">Symbole</label>
                                 <input type="text" name="shop_currency" class="form-control"
                                     placeholder="FCFA"
                                     value="{{ old('shop_currency', $shop['shop_currency'] ?? 'FCFA') }}">
+                                <div class="form-text">Ex : FCFA, €, $, £, XOF</div>
                             </div>
+                            <div class="col-sm-4">
+                                <label class="form-label fw-semibold">Position</label>
+                                <select name="currency_position" class="form-select">
+                                    <option value="after"  {{ ($shop['currency_position'] ?? 'after')  === 'after'  ? 'selected' : '' }}>Après (1 500 FCFA)</option>
+                                    <option value="before" {{ ($shop['currency_position'] ?? 'after')  === 'before' ? 'selected' : '' }}>Avant (€ 1 500)</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label fw-semibold">Décimales</label>
+                                <select name="currency_decimals" class="form-select">
+                                    <option value="0" {{ ($shop['currency_decimals'] ?? '0') === '0' ? 'selected' : '' }}>0 (1 500)</option>
+                                    <option value="2" {{ ($shop['currency_decimals'] ?? '0') === '2' ? 'selected' : '' }}>2 (1 500,00)</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold">Séparateur milliers</label>
+                                <select name="currency_thou_sep" class="form-select">
+                                    <option value=" "  {{ ($shop['currency_thou_sep'] ?? ' ') === ' '  ? 'selected' : '' }}>Espace (1 500)</option>
+                                    <option value="."  {{ ($shop['currency_thou_sep'] ?? ' ') === '.'  ? 'selected' : '' }}>Point (1.500)</option>
+                                    <option value=","  {{ ($shop['currency_thou_sep'] ?? ' ') === ','  ? 'selected' : '' }}>Virgule (1,500)</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-semibold">Séparateur décimal</label>
+                                <select name="currency_dec_sep" class="form-select">
+                                    <option value="," {{ ($shop['currency_dec_sep'] ?? ',') === ',' ? 'selected' : '' }}>Virgule (1 500,00)</option>
+                                    <option value="." {{ ($shop['currency_dec_sep'] ?? ',') === '.' ? 'selected' : '' }}>Point (1 500.00)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="alert alert-info py-2 px-3 small mb-0">
+                            <i class="fas fa-eye me-1"></i>
+                            <strong>Aperçu :</strong>
+                            <span id="currency-preview">{{ fmt_price(15000) }}</span>
                         </div>
 
                         <button type="submit" class="btn btn-success">

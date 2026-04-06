@@ -153,12 +153,17 @@
                             </div>
                             @endif
 
+                            @if($totals['shippingCost'] > 0)
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Livraison</span>
-                                <strong>
-                                    {{ $totals['shippingCost'] == 0 ? 'Gratuit' : number_format($totals['shippingCost'], 0, ',', ' ').' FCFA' }}
-                                </strong>
+                                <strong>{{ fmt_price($totals['shippingCost']) }}</strong>
                             </div>
+                            @elseif($coupon && ($coupon->free_shipping ?? false))
+                            <div class="d-flex justify-content-between mb-2 text-success">
+                                <span><i class="fas fa-truck me-1"></i>Livraison</span>
+                                <strong><s class="text-muted small me-1">payante</s> Gratuite <i class="fas fa-tag small"></i></strong>
+                            </div>
+                            @endif
                             <div class="d-flex justify-content-between mb-2 text-muted small">
                                 <span>TVA (20%)</span>
                                 <span>{{ number_format($totals['taxAmount'], 0, ',', ' ') }} FCFA</span>

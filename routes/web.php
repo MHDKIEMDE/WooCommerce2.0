@@ -16,6 +16,8 @@ use App\Http\Controllers\Web\Admin\ThemeSettingsController;
 use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\CheckoutController;
 use App\Http\Controllers\Web\TestimonialController;
+use App\Http\Controllers\Web\Admin\DashboardController;
+use App\Http\Controllers\Web\Admin\UserController as AdminUserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,7 +37,8 @@ Route::get('/shop/{slug}', [ShopController::class, 'show'])->name('shop.show');
 Route::get('/category/{slug}', [ShopController::class, 'category'])->name('shop.category');
 
 // ── Recherche ─────────────────────────────────────────────────────────────
-Route::get('/search', [ShopController::class, 'search'])->name('shop.search');
+Route::get('/search',         [ShopController::class, 'search'])->name('shop.search');
+Route::get('/search/suggest', [ShopController::class, 'suggest'])->name('shop.suggest');
 
 // ── Auth Web (invités seulement) ──────────────────────────────────────────
 Route::middleware('guest')->group(function () {
@@ -84,6 +87,9 @@ Route::middleware('auth')->group(function () {
 
 // ── Dashboard Admin — Carrousel Slides ───────────────────────────────────
 Route::middleware(['auth', 'role:admin,super-admin'])->prefix('dashboard')->name('admin.')->group(function () {
+    Route::get('/',      [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('users',  [AdminUserController::class, 'index'])->name('users.index');
+    Route::patch('users/{user}/toggle', [AdminUserController::class, 'toggleStatus'])->name('users.toggle');
     Route::resource('slides', SlideController::class);
     Route::resource('testimonials', AdminTestimonialController::class)->except(['show']);
     Route::resource('promotions', PromotionController::class)->except(['show']);

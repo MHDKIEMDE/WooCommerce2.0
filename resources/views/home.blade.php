@@ -7,8 +7,8 @@
         <div class="container py-5">
             <div class="row g-5 align-items-center">
                 <div class="col-12 col-lg-7 order-2 order-lg-1">
-                    <h4 class="mb-3 text-secondary">Aliments 100 % biologiques</h4>
-                    <h1 class="mb-5 display-3 text-primary">Aliments biologiques à base de fruits</h1>
+                    <h4 class="mb-3 text-secondary">{{ $banner['banner_subtitle'] ?? 'Aliments 100 % biologiques' }}</h4>
+                    <h1 class="mb-5 display-3 text-primary">{{ $banner['banner_title'] ?? 'Aliments biologiques à base de fruits' }}</h1>
                     <form action="{{ route('shop.search') }}" method="GET">
                         <div class="position-relative w-100">
                             <input class="form-control border-2 border-secondary w-100 py-3 ps-4 pe-5 rounded-pill"

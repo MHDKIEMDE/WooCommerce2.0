@@ -179,17 +179,22 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body d-flex align-items-center">
-                    <form action="{{ route('shop.search') }}" method="GET" class="w-75 mx-auto">
-                        <div class="input-group">
-                            <input type="search" name="q" class="form-control p-3"
-                                placeholder="Rechercher un produit…"
-                                value="{{ request('q') }}"
-                                aria-describedby="search-icon-1">
-                            <button type="submit" id="search-icon-1" class="input-group-text p-3 btn btn-primary border-0">
-                                <i class="fa fa-search"></i>
-                            </button>
-                        </div>
-                    </form>
+                    <div class="w-75 mx-auto position-relative">
+                        <form action="{{ route('shop.search') }}" method="GET">
+                            <div class="input-group">
+                                <input type="search" name="q" id="modal-search-input" class="form-control p-3"
+                                    placeholder="Rechercher un produit…"
+                                    value="{{ request('q') }}"
+                                    autocomplete="off">
+                                <button type="submit" class="input-group-text p-3 btn btn-primary border-0">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                        <ul id="modal-suggest-list"
+                            class="list-unstyled position-absolute bg-white border rounded shadow-lg w-100 mb-0 mt-1"
+                            style="z-index:9999;display:none;max-height:340px;overflow-y:auto;top:100%;left:0;"></ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -364,6 +369,57 @@
     <script src="{{ asset('lib/owlcarousel/owl.carousel.min.js') }}"></script>
     <!-- Template Javascript -->
     <script src="{{ asset('js/main.js') }}"></script>
+
+    {{-- Auto-suggest recherche --}}
+    <script>
+    (function () {
+        const SUGGEST_URL = '{{ route("shop.suggest") }}';
+        let debounce;
+
+        function buildSuggest(input, list) {
+            if (!input || !list) return;
+
+            input.addEventListener('input', function () {
+                clearTimeout(debounce);
+                const q = this.value.trim();
+                if (q.length < 3) { list.style.display = 'none'; return; }
+
+                debounce = setTimeout(async () => {
+                    const res  = await fetch(SUGGEST_URL + '?q=' + encodeURIComponent(q));
+                    const data = await res.json();
+
+                    if (!data.length) { list.style.display = 'none'; return; }
+
+                    list.innerHTML = data.map(p => `
+                        <li>
+                            <a href="${p.url}" class="d-flex align-items-center gap-3 px-3 py-2 text-decoration-none text-dark border-bottom suggest-item"
+                               style="transition:background .15s;">
+                                <img src="${p.image}" style="width:42px;height:42px;object-fit:cover;border-radius:6px;" alt="${p.name}">
+                                <div class="flex-grow-1 min-w-0">
+                                    <div class="fw-semibold text-truncate" style="font-size:.9rem;">${p.name}</div>
+                                    <div class="text-primary small">${p.price}</div>
+                                </div>
+                            </a>
+                        </li>`).join('');
+
+                    list.style.display = 'block';
+                }, 280);
+            });
+
+            document.addEventListener('click', e => {
+                if (!list.contains(e.target) && e.target !== input) {
+                    list.style.display = 'none';
+                }
+            });
+        }
+
+        // Recherche modale
+        buildSuggest(
+            document.getElementById('modal-search-input'),
+            document.getElementById('modal-suggest-list')
+        );
+    })();
+    </script>
 
 </body>
 

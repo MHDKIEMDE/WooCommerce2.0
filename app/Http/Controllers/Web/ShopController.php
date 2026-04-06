@@ -206,4 +206,35 @@ class ShopController extends Controller
 
         return view('shop', compact('products', 'q'));
     }
+
+    /** Auto-suggest AJAX : retourne max 8 résultats en JSON */
+    public function suggest(Request $request)
+    {
+        $q = trim($request->input('q', ''));
+
+        if (strlen($q) < 3) {
+            return response()->json([]);
+        }
+
+        $results = Product::with(['images'])
+            ->where('status', 'active')
+            ->where('stock_quantity', '>', 0)
+            ->where(fn ($w) =>
+                $w->where('name', 'like', "%{$q}%")
+                  ->orWhere('short_description', 'like', "%{$q}%")
+            )
+            ->orderBy('rating_count', 'desc')
+            ->limit(8)
+            ->get()
+            ->map(fn ($p) => [
+                'id'    => $p->id,
+                'name'  => $p->name,
+                'price' => fmt_price($p->price),
+                'url'   => route('shop.show', $p->slug),
+                'image' => ($p->images->firstWhere('is_primary', true) ?? $p->images->first())?->url
+                           ?? asset('img/fruite-item-1.jpg'),
+            ]);
+
+        return response()->json($results);
+    }
 }
