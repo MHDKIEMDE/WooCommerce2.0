@@ -11,7 +11,7 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         $name  = fake()->unique()->words(3, true);
-        $price = fake()->randomFloat(2, 1, 50);
+        $price = fake()->numberBetween(500, 25000); // FCFA
 
         return [
             'name'                => ucfirst($name),
@@ -19,8 +19,8 @@ class ProductFactory extends Factory
             'short_description'   => fake()->sentence(),
             'description'         => fake()->paragraph(),
             'price'               => $price,
-            'compare_price'       => fake()->optional(0.3)->randomFloat(2, $price, $price * 1.5),
-            'cost_price'          => $price * 0.6,
+            'compare_price'       => fake()->optional(0.3)->numberBetween($price, (int)($price * 1.5)),
+            'cost_price'          => (int)($price * 0.6),
             'sku'                 => strtoupper(fake()->unique()->bothify('SKU-???-###')),
             'stock_quantity'      => fake()->numberBetween(0, 200),
             'low_stock_threshold' => 5,
@@ -29,7 +29,7 @@ class ProductFactory extends Factory
             'rating_avg'          => fake()->randomFloat(1, 1, 5),
             'rating_count'        => fake()->numberBetween(0, 100),
             'weight'              => fake()->optional()->randomFloat(2, 0.1, 5),
-            'vat_rate'            => 20.00,
+            'vat_rate'            => 18.00, // TVA Côte d'Ivoire
             'category_id'        => Category::factory(),
         ];
     }

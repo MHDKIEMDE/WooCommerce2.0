@@ -13,6 +13,7 @@ use App\Http\Controllers\Web\Admin\NotificationSettingsController;
 use App\Http\Controllers\Web\Admin\SocialSettingsController;
 use App\Http\Controllers\Web\Admin\ShopSettingsController;
 use App\Http\Controllers\Web\Admin\ThemeSettingsController;
+use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\CheckoutController;
 use App\Http\Controllers\Web\TestimonialController;
 use Illuminate\Support\Facades\Route;
@@ -67,9 +68,18 @@ Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.s
 Route::get('/checkout/confirmation/{orderNumber}', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
 Route::get('/testimonial', [TestimonialController::class, 'index'])->name('testimonial.index');
 
-// ── Profil utilisateur ────────────────────────────────────────────────────
+// ── Compte utilisateur ────────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
-    Route::view('/profile', 'profile')->name('user.profile');
+    Route::get('/account',                          [AccountController::class, 'profile'])->name('account.profile');
+    Route::get('/account/orders',                   [AccountController::class, 'orders'])->name('account.orders');
+    Route::get('/account/edit',                     [AccountController::class, 'editProfile'])->name('account.edit');
+    Route::put('/account/edit',                     [AccountController::class, 'updateProfile'])->name('account.update');
+    Route::post('/account/password',                [AccountController::class, 'changePassword'])->name('account.password');
+    Route::get('/account/addresses',                [AccountController::class, 'addresses'])->name('account.addresses');
+    Route::post('/account/addresses',               [AccountController::class, 'storeAddress'])->name('account.addresses.store');
+    Route::put('/account/addresses/{id}',           [AccountController::class, 'updateAddress'])->name('account.addresses.update');
+    Route::delete('/account/addresses/{id}',        [AccountController::class, 'destroyAddress'])->name('account.addresses.destroy');
+    Route::patch('/account/addresses/{id}/default', [AccountController::class, 'setDefaultAddress'])->name('account.addresses.default');
 });
 
 // ── Dashboard Admin — Carrousel Slides ───────────────────────────────────

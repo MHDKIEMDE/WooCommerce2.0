@@ -49,11 +49,11 @@ class CheckoutController extends Controller
         $data = $request->validate([
             'first_name'     => 'required|string|max:100',
             'last_name'      => 'required|string|max:100',
-            'email'          => 'required|email|max:150',
+            'email'          => 'nullable|email|max:150',
             'phone'          => 'required|string|max:30',
             'address'        => 'required|string|max:255',
             'city'           => 'required|string|max:100',
-            'country'        => 'required|string|max:100',
+            'country'        => 'nullable|string|max:100',
             'postal_code'    => 'nullable|string|max:20',
             'payment_method' => 'required|in:cash_on_delivery,bank_transfer',
             'notes'          => 'nullable|string|max:1000',
@@ -124,15 +124,41 @@ class CheckoutController extends Controller
             \Illuminate\Support\Facades\Log::error('WhatsApp notification failed: ' . $e->getMessage());
         }
 
+        session(['confirmed_order' => $order->order_number]);
+
         return redirect()->route('checkout.confirmation', $order->order_number)
             ->with('success', 'Commande passée avec succès !');
     }
 
-    public function confirmation(string $orderNumber): View|RedirectResponse
+    public function confirmation(Request $request, string $orderNumber): View|RedirectResponse
     {
         $order = Order::with('items')
             ->where('order_number', $orderNumber)
-            ->firstOrFail();
+            ->first();
+
+        if (! $order) {
+            return redirect()->route('home')
+                ->with('error', 'Commande introuvable.');
+        }
+
+        // Accès autorisé si :
+        // 1) l'utilisateur connecté est propriétaire de la commande
+        // 2) ou la commande vient d'être passée dans cette session (invité)
+        $isOwner      = $request->user() && $request->user()->id === $order->user_id;
+        $isJustPlaced = session('confirmed_order') === $orderNumber;
+
+        if (! $isOwner && ! $isJustPlaced) {
+            if ($request->user()) {
+                return redirect()->route('account.orders')
+                    ->with('error', 'Vous n\'êtes pas autorisé à accéder à cette commande.');
+            }
+            return redirect()->route('home')
+                ->with('error', 'Accès non autorisé. Veuillez vous connecter pour consulter vos commandes.');
+        }
+
+        // On conserve la clé de session pour permettre le rechargement de la page de confirmation
+        // mais on la supprime après 1 affichage via flash
+        $request->session()->keep(['confirmed_order']);
 
         return view('order-confirmation', compact('order'));
     }

@@ -1,5 +1,6 @@
 @extends('layouts.app')
-@section('Agribusiness Shop', 'Connexion')
+@section('seo_title', 'Connexion')
+@section('noindex')
 @section('content')
     <!-- Page Header -->
     <div class="container-fluid page-header py-5">

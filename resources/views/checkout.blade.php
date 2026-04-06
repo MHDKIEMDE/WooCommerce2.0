@@ -1,5 +1,6 @@
 @extends('layouts.app')
-@section('Agribusiness Shop', 'Paiement')
+@section('seo_title', 'Finaliser la commande')
+@section('noindex')
 @section('content')
 
     <!-- En-tête -->
@@ -46,28 +47,22 @@
                                 @error('last_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-12">
-                                <label class="form-label">Adresse <sup class="text-danger">*</sup></label>
+                                <label class="form-label">Quartier <sup class="text-danger">*</sup></label>
                                 <input type="text" name="address" class="form-control @error('address') is-invalid @enderror"
-                                    placeholder="Numéro, rue, quartier…"
+                                    placeholder="Ex : Cocody, Yopougon, Plateau…"
                                     value="{{ old('address') }}" required>
                                 @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-sm-6">
                                 <label class="form-label">Ville <sup class="text-danger">*</sup></label>
                                 <input type="text" name="city" class="form-control @error('city') is-invalid @enderror"
-                                    value="{{ old('city') }}" required>
+                                    value="{{ old('city', 'Abidjan') }}" required>
                                 @error('city')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-sm-6">
-                                <label class="form-label">Code postal</label>
-                                <input type="text" name="postal_code" class="form-control"
-                                    value="{{ old('postal_code') }}">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Pays <sup class="text-danger">*</sup></label>
-                                <input type="text" name="country" class="form-control @error('country') is-invalid @enderror"
-                                    value="{{ old('country', 'Côte d\'Ivoire') }}" required>
-                                @error('country')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <label class="form-label">Pays</label>
+                                <input type="text" name="country" class="form-control"
+                                    value="{{ old('country', 'Côte d\'Ivoire') }}" readonly>
                             </div>
                             <div class="col-sm-6">
                                 <label class="form-label">Téléphone <sup class="text-danger">*</sup></label>
@@ -76,9 +71,9 @@
                                 @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-sm-6">
-                                <label class="form-label">Email <sup class="text-danger">*</sup></label>
+                                <label class="form-label">Email <span class="text-muted small">(optionnel)</span></label>
                                 <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                                    value="{{ old('email', $user?->email) }}" required>
+                                    value="{{ old('email', $user?->email) }}">
                                 @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-12">

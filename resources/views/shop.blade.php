@@ -1,5 +1,7 @@
 @extends('layouts.app')
-@section('Agribusiness Shop', isset($category) ? $category->name : (isset($q) ? 'Recherche : '.$q : 'Boutique'))
+@section('seo_title', isset($category) ? $category->name : (isset($q) ? 'Recherche : '.$q : 'Boutique'))
+@section('seo_description', isset($category) ? 'Découvrez notre sélection de '.$category->name.' — produits frais de qualité.' : 'Parcourez notre catalogue de produits frais.')
+@section('seo_canonical', isset($category) ? route('shop.category', $category->slug) : route('shop.index'))
 @section('content')
     <!-- Single Page Header start -->
     <div class="container-fluid page-header py-5">
@@ -70,7 +72,7 @@
                                                         class="{{ request('category') === $cat->slug ? 'fw-bold text-primary' : '' }}">
                                                         {{ $cat->name }}
                                                     </a>
-                                                    <span>({{ $cat->products()->where('status','active')->count() }})</span>
+                                                    <span>({{ $cat->products_count }})</span>
                                                 </div>
                                             </li>
                                             @endforeach
@@ -86,27 +88,14 @@
                                             <input type="hidden" name="{{ $key }}" value="{{ $val }}">
                                         @endforeach
                                         <div class="mb-3">
-                                            <h4 class="mb-2">Prix max (€)</h4>
+                                            <h4 class="mb-2">Prix max (FCFA)</h4>
                                             <input type="range" class="form-range w-100" id="rangeInput" name="max_price"
-                                                min="0" max="500" value="{{ request('max_price', 500) }}"
-                                                oninput="amount.value=rangeInput.value">
-                                            <output id="amount" for="rangeInput">{{ request('max_price', 500) }}</output> €
+                                                min="0" max="100000" step="1000" value="{{ request('max_price', 100000) }}"
+                                                oninput="amount.value=Number(rangeInput.value).toLocaleString('fr-FR')">
+                                            <output id="amount" for="rangeInput">{{ number_format(request('max_price', 100000), 0, ',', ' ') }}</output> FCFA
                                         </div>
                                         <button type="submit" class="btn btn-sm btn-primary rounded-pill w-100">Filtrer</button>
                                     </form>
-                                </div>
-
-                                {{-- Stock --}}
-                                <div class="col-lg-12">
-                                    <div class="mb-3">
-                                        <h4>Disponibilité</h4>
-                                        <div class="mb-2">
-                                            <a href="{{ route('shop.index', array_merge(request()->query(), ['in_stock' => 1])) }}"
-                                                class="btn btn-sm {{ request('in_stock') ? 'btn-success' : 'btn-outline-success' }} rounded-pill">
-                                                En stock uniquement
-                                            </a>
-                                        </div>
-                                    </div>
                                 </div>
 
                                 {{-- Marques --}}
@@ -138,53 +127,8 @@
                         <div class="col-lg-9">
                             <div class="row g-4 justify-content-center">
                                 @forelse($products as $product)
-                                @php $img = $product->images->firstWhere('is_primary', true) ?? $product->images->first(); @endphp
-                                <div class="col-md-6 col-lg-6 col-xl-4">
-                                    <div class="rounded position-relative fruite-item">
-                                        <div class="fruite-img">
-                                            <a href="{{ route('shop.show', $product->slug) }}">
-                                                <img src="{{ $img ? $img->url : asset('img/fruite-item-1.jpg') }}"
-                                                    class="img-fluid w-100 rounded-top"
-                                                    style="height:200px; object-fit:cover;"
-                                                    alt="{{ $product->name }}">
-                                            </a>
-                                        </div>
-                                        @if($product->category)
-                                        <div class="text-white bg-secondary px-3 py-1 rounded position-absolute"
-                                            style="top: 10px; left: 10px;">{{ $product->category->name }}</div>
-                                        @endif
-                                        @if($product->compare_price && $product->compare_price > $product->price)
-                                        <div class="text-white bg-danger px-2 py-1 rounded position-absolute"
-                                            style="top: 10px; right: 10px; font-size: .75rem;">
-                                            -{{ round((($product->compare_price - $product->price) / $product->compare_price) * 100) }}%
-                                        </div>
-                                        @endif
-                                        <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                            <h4>
-                                                <a href="{{ route('shop.show', $product->slug) }}" class="text-dark text-decoration-none">
-                                                    {{ $product->name }}
-                                                </a>
-                                            </h4>
-                                            <p class="text-truncate mb-2 text-muted small">{{ $product->short_description }}</p>
-                                            <div class="d-flex justify-content-between flex-lg-wrap align-items-center">
-                                                <div>
-                                                    <span class="text-dark fs-5 fw-bold">{{ number_format($product->price, 2) }} €</span>
-                                                    @if($product->compare_price && $product->compare_price > $product->price)
-                                                    <span class="text-muted text-decoration-line-through ms-1 small">
-                                                        {{ number_format($product->compare_price, 2) }} €
-                                                    </span>
-                                                    @endif
-                                                    @if($product->unit)
-                                                    <span class="text-muted small"> / {{ $product->unit }}</span>
-                                                    @endif
-                                                </div>
-                                                <a href="{{ route('shop.show', $product->slug) }}"
-                                                    class="btn border border-secondary rounded-pill px-3 text-primary">
-                                                    <i class="fa fa-eye me-1 text-primary"></i> Voir
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="col-6 col-md-6 col-lg-6 col-xl-4">
+                                    @include('components.product-card', ['product' => $product])
                                 </div>
                                 @empty
                                 <div class="col-12 text-center py-5">

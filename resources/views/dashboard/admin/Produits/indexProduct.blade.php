@@ -42,7 +42,7 @@
                             </a>
                         </td>
                         <td>{{ $product->category->name ?? '—' }}</td>
-                        <td>{{ number_format($product->price, 2) }} €</td>
+                        <td>{{ number_format($product->price, 0, ',', ' ') }} FCFA</td>
                         <td>
                             @if($product->stock_quantity <= 0)
                                 <span class="badge bg-danger">Rupture</span>

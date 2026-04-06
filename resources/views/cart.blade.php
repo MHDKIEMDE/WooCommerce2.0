@@ -1,5 +1,6 @@
 @extends('layouts.app')
-@section('Agribusiness Shop', 'Panier')
+@section('seo_title', 'Mon Panier')
+@section('noindex')
 @section('content')
     <!-- Single Page Header start -->
     <div class="container-fluid page-header py-5">
@@ -68,7 +69,7 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="fw-bold">{{ number_format($unitPrice, 2) }} €</span>
+                                <span class="fw-bold">{{ number_format($unitPrice, 0, ',', ' ') }} FCFA</span>
                                 @if($item->product?->unit)
                                 <small class="text-muted"> / {{ $item->product->unit }}</small>
                                 @endif
@@ -90,7 +91,7 @@
                                 </form>
                             </td>
                             <td>
-                                <span class="fw-bold">{{ number_format($lineTotal, 2) }} €</span>
+                                <span class="fw-bold">{{ number_format($lineTotal, 0, ',', ' ') }} FCFA</span>
                             </td>
                             <td>
                                 <form method="POST" action="{{ route('cart.remove', $item->id) }}">
@@ -142,30 +143,30 @@
 
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Sous-total</span>
-                                <strong>{{ number_format($totals['subtotal'], 2) }} €</strong>
+                                <strong>{{ number_format($totals['subtotal'], 0, ',', ' ') }} FCFA</strong>
                             </div>
 
                             @if($totals['discount'] > 0)
                             <div class="d-flex justify-content-between mb-2 text-success">
                                 <span>Réduction</span>
-                                <strong>-{{ number_format($totals['discount'], 2) }} €</strong>
+                                <strong>-{{ number_format($totals['discount'], 0, ',', ' ') }} FCFA</strong>
                             </div>
                             @endif
 
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Livraison</span>
                                 <strong>
-                                    {{ $totals['shippingCost'] == 0 ? 'Gratuit' : number_format($totals['shippingCost'], 2).' €' }}
+                                    {{ $totals['shippingCost'] == 0 ? 'Gratuit' : number_format($totals['shippingCost'], 0, ',', ' ').' FCFA' }}
                                 </strong>
                             </div>
                             <div class="d-flex justify-content-between mb-2 text-muted small">
                                 <span>TVA (20%)</span>
-                                <span>{{ number_format($totals['taxAmount'], 2) }} €</span>
+                                <span>{{ number_format($totals['taxAmount'], 0, ',', ' ') }} FCFA</span>
                             </div>
                         </div>
                         <div class="py-4 border-top border-bottom d-flex justify-content-between px-4">
                             <h5 class="mb-0 fw-bold">Total TTC</h5>
-                            <h5 class="mb-0 fw-bold text-primary">{{ number_format($totals['total'], 2) }} €</h5>
+                            <h5 class="mb-0 fw-bold text-primary">{{ number_format($totals['total'], 0, ',', ' ') }} FCFA</h5>
                         </div>
                         <div class="p-4">
                             <a href="{{ route('checkout.show') }}" class="btn btn-primary rounded-pill w-100 py-2 text-uppercase fw-bold">

@@ -78,7 +78,8 @@ class ShopController extends Controller
     {
         $query = Product::query()
             ->with(['category', 'brand', 'images'])
-            ->where('status', 'active');
+            ->where('status', 'active')
+            ->where('stock_quantity', '>', 0);  // uniquement les produits disponibles
 
         if ($request->filled('category')) {
             $query->whereHas('category', fn ($q) => $q->where('slug', $request->category));
@@ -96,10 +97,6 @@ class ShopController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
 
-        if ($request->boolean('in_stock')) {
-            $query->where('stock_quantity', '>', 0);
-        }
-
         match ($request->input('sort')) {
             'price_asc'  => $query->orderBy('price', 'asc'),
             'price_desc' => $query->orderBy('price', 'desc'),
@@ -111,8 +108,13 @@ class ShopController extends Controller
 
         $products = $query->paginate(16)->withQueryString();
 
-        $categories = Cache::remember('categories:all', now()->addMinutes(60), fn () =>
-            Category::whereNull('parent_id')->where('is_active', true)->orderBy('sort_order')->get()
+        $categories = Cache::remember('categories:with_products', now()->addMinutes(30), fn () =>
+            Category::whereNull('parent_id')
+                ->where('is_active', true)
+                ->whereHas('products', fn ($q) => $q->where('status', 'active')->where('stock_quantity', '>', 0))
+                ->withCount(['products' => fn ($q) => $q->where('status', 'active')->where('stock_quantity', '>', 0)])
+                ->orderBy('sort_order')
+                ->get()
         );
 
         $brands = Cache::remember('brands:all', now()->addMinutes(60), fn () =>
@@ -141,12 +143,26 @@ class ShopController extends Controller
         }
 
         $related = Cache::remember("web:related:{$slug}", now()->addMinutes(10), function () use ($product) {
-            return Product::with(['images'])
+            $items = Product::with(['images'])
                 ->where('status', 'active')
                 ->where('category_id', $product->category_id)
                 ->where('id', '!=', $product->id)
-                ->take(4)
+                ->take(8)
                 ->get();
+
+            // Si pas assez de produits dans la catégorie, compléter avec d'autres produits
+            if ($items->count() < 6) {
+                $extra = Product::with(['images'])
+                    ->where('status', 'active')
+                    ->where('id', '!=', $product->id)
+                    ->whereNotIn('id', $items->pluck('id'))
+                    ->inRandomOrder()
+                    ->take(8 - $items->count())
+                    ->get();
+                $items = $items->concat($extra);
+            }
+
+            return $items;
         });
 
         return view('showProduct', compact('product', 'related'));

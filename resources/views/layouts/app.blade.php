@@ -3,10 +3,43 @@
 
 <head>
     <meta charset="utf-8">
-    <title>@yield('Agribusiness', 'Agri-Shop')</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta content="" name="keywords">
-    <meta content="" name="description">-
+    @php
+        $shopName     = \App\Models\Setting::get('shop_name', config('app.name'));
+        $seoTitle     = trim(strip_tags($__env->yieldContent('seo_title')));
+        $seoTitle     = $seoTitle ? \Illuminate\Support\Str::limit($seoTitle, 60) : $shopName;
+        $fullTitle    = $seoTitle === $shopName ? $shopName : $seoTitle . ' — ' . $shopName;
+        $seoDesc      = trim(strip_tags($__env->yieldContent('seo_description')))
+                        ?: \App\Models\Setting::get('shop_tagline', 'Produits frais livrés chez vous.');
+        $seoImage     = trim($__env->yieldContent('seo_image')) ?: asset('img/hero.jpg');
+        $seoCanonical = trim($__env->yieldContent('seo_canonical')) ?: url()->current();
+    @endphp
+    <title>{{ $fullTitle }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ Str::limit($seoDesc, 160) }}">
+    <link rel="canonical" href="{{ $seoCanonical }}">
+    @hasSection('noindex')
+    <meta name="robots" content="noindex, nofollow">
+    @else
+    <meta name="robots" content="index, follow">
+    @endif
+
+    {{-- Open Graph --}}
+    <meta property="og:type"        content="@yield('og_type', 'website')">
+    <meta property="og:title"       content="{{ $fullTitle }}">
+    <meta property="og:description" content="{{ Str::limit($seoDesc, 200) }}">
+    <meta property="og:image"       content="{{ $seoImage }}">
+    <meta property="og:url"         content="{{ $seoCanonical }}">
+    <meta property="og:site_name"   content="{{ $shopName }}">
+    <meta property="og:locale"      content="fr_FR">
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="{{ $fullTitle }}">
+    <meta name="twitter:description" content="{{ Str::limit($seoDesc, 200) }}">
+    <meta name="twitter:image"       content="{{ $seoImage }}">
+
+    {{-- Structured data (JSON-LD) slot --}}
+    @yield('schema_org')
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -114,15 +147,17 @@
                                 class="fas fa-search text-primary"></i>
                         </button>
                         <a href="{{ route('cart.index') }}" class="position-relative me-4 my-auto">
-                            <i class="fa fa-shopping-bag fa-2x"></i>
+                            <i class="fa fa-shopping-bag fa-2x text-primary"></i>
+                            @if(($cartCount ?? 0) > 0)
                             <span
                                 class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
-                                style="top: -5px; left: 15px; height: 20px; min-width: 20px;">3</span>
+                                style="top: -5px; left: 15px; height: 20px; min-width: 20px;">{{ $cartCount }}</span>
+                            @endif
                         </a>
                         @auth <!-- Vérifie si l'utilisateur est connecté -->
                             <!-- Icône utilisateur connecté -->
-                            <a href="{{ route('user.profile') }}" class="my-auto">
-                                <i class="fas fa-user fa-2x"></i>
+                            <a href="{{ route('account.profile') }}" class="my-auto">
+                                <i class="fas fa-user fa-2x text-primary"></i>
                             </a>
                         @else
                             <!-- Si l'utilisateur n'est pas connecté -->
@@ -144,11 +179,17 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body d-flex align-items-center">
-                    <div class="input-group w-75 mx-auto d-flex">
-                        <input type="search" class="form-control p-3" placeholder="keywords"
-                            aria-describedby="search-icon-1">
-                        <span id="search-icon-1" class="input-group-text p-3"><i class="fa fa-search"></i></span>
-                    </div>
+                    <form action="{{ route('shop.search') }}" method="GET" class="w-75 mx-auto">
+                        <div class="input-group">
+                            <input type="search" name="q" class="form-control p-3"
+                                placeholder="Rechercher un produit…"
+                                value="{{ request('q') }}"
+                                aria-describedby="search-icon-1">
+                            <button type="submit" id="search-icon-1" class="input-group-text p-3 btn btn-primary border-0">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -268,7 +309,7 @@
                     <div class="d-flex flex-column text-start footer-item">
                         <h4 class="text-light mb-3">Compte</h4>
                         <!-- Icône utilisateur connecté -->
-                        <a class="btn-link" href="{{ route('user.profile') }}">Mon compte</a>
+                        <a class="btn-link" href="{{ route('account.profile') }}">Mon compte</a>
                         <a class="btn-link" href="#">Détails de la boutique</a>
                         <a class="btn-link" href="#">Panier d'achat</a>
                         <a class="btn-link" href="#">favoris</a>
@@ -279,11 +320,18 @@
                 <div class="col-lg-3 col-md-6">
                     <div class="footer-item">
                         <h4 class="text-light mb-3">Contact</h4>
-                        <p>1200 Logement, Ouagadougou,Burkina faso</p>
-                        <p>agribusiness shop</p>
-                        <p>+226 07443112</p>
-                        <p>Paiements acceptés</p>
-                        <img src="img/payment.png" class="img-fluid" alt="">
+                        @php $shopContact = \App\Models\Setting::getGroup('shop'); @endphp
+                        @if(!empty($shopContact['shop_address']))
+                        <p><i class="fas fa-map-marker-alt text-secondary me-2"></i>{{ $shopContact['shop_address'] }}</p>
+                        @endif
+                        @if(!empty($shopContact['shop_phone']))
+                        <p><i class="fas fa-phone text-secondary me-2"></i>{{ $shopContact['shop_phone'] }}</p>
+                        @endif
+                        @if(!empty($shopContact['shop_email']))
+                        <p><i class="fas fa-envelope text-secondary me-2"></i>{{ $shopContact['shop_email'] }}</p>
+                        @endif
+                        <p class="mt-2">Paiements acceptés</p>
+                        <img src="{{ asset('img/payment.png') }}" class="img-fluid" alt="">
                     </div>
                 </div>
             </div>
@@ -295,9 +343,10 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                    <span class="text-light"><a href="#"><i
-                                class="fas fa-copyright text-light me-2"></i>{{ \App\Models\Setting::get('shop_name', config('app.name')) }}</a>, Tous droits
-                        réservés.</span>
+                    <span class="text-light">
+                        <i class="fas fa-copyright text-light me-2"></i>
+                        {{ \App\Models\Setting::get('shop_name', config('app.name')) }} {{ date('Y') }} — Tous droits réservés.
+                    </span>
                 </div>
             </div>
         </div>
@@ -309,12 +358,12 @@
     <!-- JavaScript Libraries -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="lib/easing/easing.min.js"></script>
-    <script src="lib/waypoints/waypoints.min.js"></script>
-    <script src="lib/lightbox/js/lightbox.min.js"></script>
-    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="{{ asset('lib/easing/easing.min.js') }}"></script>
+    <script src="{{ asset('lib/waypoints/waypoints.min.js') }}"></script>
+    <script src="{{ asset('lib/lightbox/js/lightbox.min.js') }}"></script>
+    <script src="{{ asset('lib/owlcarousel/owl.carousel.min.js') }}"></script>
     <!-- Template Javascript -->
-    <script src="js/main.js"></script>
+    <script src="{{ asset('js/main.js') }}"></script>
 
 </body>
 

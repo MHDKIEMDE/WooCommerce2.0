@@ -1,5 +1,6 @@
 @extends('layouts.app')
-@section('Agribusiness Shop', 'Mot de passe oublié')
+@section('seo_title', 'Mot de passe oublié')
+@section('noindex')
 @section('content')
     <div class="container-fluid page-header py-5">
         <h1 class="text-center text-white display-6">Mot de passe oublié</h1>
