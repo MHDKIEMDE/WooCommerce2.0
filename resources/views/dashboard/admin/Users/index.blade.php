@@ -97,14 +97,25 @@
                                 @endif
                             </td>
                             <td class="text-muted small">{{ $user->created_at->format('d/m/Y') }}</td>
-                            <td>
+                            <td class="d-flex gap-1 flex-wrap">
+                                <a href="{{ route('admin.users.edit', $user) }}"
+                                   class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    <i class="fas fa-edit"></i>
+                                </a>
                                 @if($user->id !== auth()->id())
                                 <form method="POST" action="{{ route('admin.users.toggle', $user) }}" class="d-inline">
                                     @csrf @method('PATCH')
                                     <button type="submit"
-                                        class="btn btn-sm {{ ($user->is_active ?? true) ? 'btn-outline-danger' : 'btn-outline-success' }} rounded-pill"
+                                        class="btn btn-sm {{ ($user->is_active ?? true) ? 'btn-outline-warning' : 'btn-outline-success' }} rounded-pill"
                                         title="{{ ($user->is_active ?? true) ? 'Suspendre' : 'Activer' }}">
                                         <i class="fas fa-{{ ($user->is_active ?? true) ? 'ban' : 'check' }}"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="d-inline"
+                                      onsubmit="return confirm('Supprimer {{ addslashes($user->name) }} ?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
                                 @endif

@@ -145,6 +145,16 @@
                             <i class="fas fa-home"></i> Bannière & Stats
                         </a>
 
+                        <div class="sb-sidenav-menu-heading">Ventes</div>
+                        <a class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}"
+                           href="{{ route('admin.orders.index') }}">
+                            <i class="fas fa-shopping-cart"></i> Commandes
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('admin.stock.*') ? 'active' : '' }}"
+                           href="{{ route('admin.stock.index') }}">
+                            <i class="fas fa-boxes"></i> Gestion du stock
+                        </a>
+
                         <div class="sb-sidenav-menu-heading">Utilisateurs</div>
                         <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
                            href="{{ route('admin.users.index') }}">

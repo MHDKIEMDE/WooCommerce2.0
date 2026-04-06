@@ -18,6 +18,8 @@ use App\Http\Controllers\Web\CheckoutController;
 use App\Http\Controllers\Web\TestimonialController;
 use App\Http\Controllers\Web\Admin\DashboardController;
 use App\Http\Controllers\Web\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Web\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Web\Admin\StockController as AdminStockController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -88,9 +90,18 @@ Route::middleware('auth')->group(function () {
 // ── Dashboard Admin — Carrousel Slides ───────────────────────────────────
 Route::middleware(['auth', 'role:admin,super-admin'])->prefix('dashboard')->name('admin.')->group(function () {
     Route::get('/',             [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('users',         [AdminUserController::class, 'index'])->name('users.index');
-    Route::get('charts.html',   fn () => redirect()->route('admin.users.index'))->name('charts.redirect');
-    Route::patch('users/{user}/toggle', [AdminUserController::class, 'toggleStatus'])->name('users.toggle');
+    Route::get('users',                   [AdminUserController::class, 'index'])->name('users.index');
+    Route::get('users/{user}/edit',       [AdminUserController::class, 'edit'])->name('users.edit');
+    Route::put('users/{user}',            [AdminUserController::class, 'update'])->name('users.update');
+    Route::delete('users/{user}',         [AdminUserController::class, 'destroy'])->name('users.destroy');
+    Route::get('charts.html',             fn () => redirect()->route('admin.users.index'))->name('charts.redirect');
+    Route::patch('users/{user}/toggle',   [AdminUserController::class, 'toggleStatus'])->name('users.toggle');
+    Route::get('orders',                  [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/{order}',          [AdminOrderController::class, 'show'])->name('orders.show');
+    Route::patch('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.status');
+    Route::patch('orders/{order}/payment',[AdminOrderController::class, 'updatePayment'])->name('orders.payment');
+    Route::get('stock',                   [AdminStockController::class, 'index'])->name('stock.index');
+    Route::patch('stock/{product}',       [AdminStockController::class, 'update'])->name('stock.update');
     Route::resource('slides', SlideController::class);
     Route::resource('testimonials', AdminTestimonialController::class)->except(['show']);
     Route::resource('promotions', PromotionController::class)->except(['show']);
