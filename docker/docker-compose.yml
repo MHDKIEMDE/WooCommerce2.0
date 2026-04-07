@@ -12,6 +12,7 @@ services:
       - /var/www/shop/.env:/var/www/html/.env:ro
       - storage:/var/www/html/storage
       - sqlite:/var/www/html/database
+      - public:/var/www/html/public
     depends_on:
       - redis
     networks:
@@ -27,6 +28,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - storage:/var/www/html/storage:ro
+      - public:/var/www/html/public:ro
     depends_on:
       - app
     networks:
@@ -81,6 +83,7 @@ services:
 volumes:
   storage:
   sqlite:
+  public:
   redis-data:
 
 networks:
