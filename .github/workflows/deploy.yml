@@ -1,4 +1,4 @@
-name: 🚀 Deploy to VPS
+name: 🚀 Deploy to VPS (Docker)
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
     steps:
 
       - name: 📥 Checkout
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
 
       - name: 🔐 SSH & Deploy
         uses: appleboy/ssh-action@v1.0.3
@@ -26,34 +26,31 @@ jobs:
 
           script: |
 
-            # ── 1. Mettre à jour le code ──────────────────────────────────
+            # ── 1. Mise à jour du code ─────────────────────────────────────
             echo "📥 Git pull..."
-            cd /var/www/shop/WooCommerce2.0
+            cd /var/www/shop/Agri---Shop
             git pull origin main
 
-            # ── 2. Dépendances Composer ───────────────────────────────────
-            echo "📦 Composer install..."
-            composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+            # ── 2. Build et redémarrage des containers ─────────────────────
+            echo "🐳 Docker build & up..."
+            cd docker
+            docker compose build --no-cache
+            docker compose up -d
 
-            # ── 3. Migrations ─────────────────────────────────────────────
+            # ── 3. Migrations ──────────────────────────────────────────────
             echo "🗄️  Migrations..."
-            php artisan migrate --force
+            docker compose exec -T app php artisan migrate --force
 
-            # ── 4. Caches production ──────────────────────────────────────
+            # ── 4. Caches production ───────────────────────────────────────
             echo "⚡ Caches..."
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            php artisan event:cache
+            docker compose exec -T app php artisan config:cache
+            docker compose exec -T app php artisan route:cache
+            docker compose exec -T app php artisan view:cache
+            docker compose exec -T app php artisan event:cache
 
-            # ── 5. Redémarrer les queues ──────────────────────────────────
-            echo "🔁 Queue restart..."
-            php artisan queue:restart
-
-            # ── 6. Permissions storage ────────────────────────────────────
-            echo "🔒 Permissions..."
-            chmod -R 775 storage bootstrap/cache
-            chown -R www-data:www-data storage bootstrap/cache
+            # ── 5. Nettoyer les images inutilisées ─────────────────────────
+            echo "🧹 Nettoyage Docker..."
+            docker image prune -f
 
             echo ""
             echo "✅ Déploiement terminé → shop.monghetto.com"

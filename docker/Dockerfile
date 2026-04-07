@@ -1,21 +1,34 @@
-FROM php:8.2-fpm-alpine
+# ── Stage 1 : Build des assets frontend ──────────────────────────────────────
+FROM node:20-alpine AS assets
 
-# Extensions système nécessaires pour Laravel
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# ── Stage 2 : PHP-FPM production ─────────────────────────────────────────────
+FROM php:8.3-fpm-alpine
+
+# Dépendances système
 RUN apk add --no-cache \
     bash \
     git \
     curl \
     zip \
     unzip \
-    nodejs \
-    npm \
-    sqlite \
-    sqlite-dev \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
     oniguruma-dev \
-    libxml2-dev
+    libxml2-dev \
+    libzip-dev \
+    icu-dev \
+    sqlite \
+    sqlite-dev \
+    autoconf \
+    g++ \
+    make
 
 # Extensions PHP
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -29,21 +42,36 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         gd \
         xml \
         fileinfo \
+        zip \
+        intl \
         opcache
 
-# Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Extension Redis
+RUN pecl install redis && docker-php-ext-enable redis
 
-# Config OPcache pour la production
+# OPcache production
 RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
  && echo "opcache.memory_consumption=128" >> /usr/local/etc/php/conf.d/opcache.ini \
  && echo "opcache.max_accelerated_files=10000" >> /usr/local/etc/php/conf.d/opcache.ini \
  && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/opcache.ini
 
+# Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
 WORKDIR /var/www/html
 
-# Permissions storage Laravel
-RUN chown -R www-data:www-data /var/www/html
+# Code source
+COPY . .
+
+# Assets compilés depuis le stage 1
+COPY --from=assets /app/public/build ./public/build
+
+# Dépendances PHP production
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+# Permissions
+RUN chown -R www-data:www-data /var/www/html \
+ && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 9000
 CMD ["php-fpm"]
