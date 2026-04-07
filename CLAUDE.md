@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-WooCommerce 2.0 is a Laravel 10 e-commerce application with two parallel channels:
+WooCommerce 2.0 is a Laravel 12 / PHP 8.3 e-commerce application with two parallel channels:
 1. **Blade web storefront** — public shop + admin dashboard
 2. **REST API (`/api/v1/`)** — for a Flutter mobile app (Sanctum-authenticated)
 
@@ -21,6 +21,7 @@ php artisan test --filter TestName  # Run a single test class or method
 php artisan route:list     # List all registered routes
 php artisan cache:clear && php artisan config:clear && php artisan view:clear
 php artisan app:stock-alert  # Manual stock alert check (also runs via cron)
+php artisan queue:work        # Start Redis queue worker (required for emails/push notifications)
 ```
 
 ### Frontend
@@ -62,7 +63,18 @@ The app serves both a Blade web frontend and a REST API from the same Laravel co
 
 ### Authentication
 - **Web**: Session-based via [app/Http/Controllers/Web/AuthController.php](app/Http/Controllers/Web/AuthController.php). Guest cart merges into user cart on login via `CartService::mergeGuestCart()`.
-- **API**: Sanctum tokens. OTP-based password reset. `EnsureUserIsActive` middleware on all protected API routes.
+- **API**: Sanctum tokens. OTP-based password reset. `EnsureUserIsActive` middleware on all protected API routes. Login requires a `device_name` field — each unique device name gets its own token, and re-using the same `device_name` revokes the previous token.
+
+### API Response Format
+
+All API responses use a uniform envelope:
+
+```json
+{ "success": true,  "message": "...", "data": [...], "meta": { "current_page": 1, "last_page": 8, "per_page": 15, "total": 112 } }
+{ "success": false, "message": "...", "errors": { "field": ["..."] } }
+```
+
+Always wrap API responses in this structure — never return bare arrays or models.
 
 ### Frontend (Blade)
 - Main layout: [resources/views/layouts/app.blade.php](resources/views/layouts/app.blade.php) — injects dynamic theme CSS custom properties (`--bs-primary`, `--bs-primary-rgb`, etc.) from `Setting::getGroup('theme')` in `<head>`.
