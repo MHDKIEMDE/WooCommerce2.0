@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\DeliveryZone;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\CartService;
@@ -29,11 +30,14 @@ class CheckoutController extends Controller
                 ->with('error', 'Votre panier est vide.');
         }
 
+        $zones = DeliveryZone::active()->get();
+
         return view('checkout', [
             'items'  => $cart['items'],
             'totals' => $cart['totals'],
             'coupon' => $cart['coupon'],
             'user'   => $request->user(),
+            'zones'  => $zones,
         ]);
     }
 
@@ -46,6 +50,8 @@ class CheckoutController extends Controller
                 ->with('error', 'Votre panier est vide.');
         }
 
+        $zones = DeliveryZone::active()->get();
+
         $data = $request->validate([
             'first_name'     => 'required|string|max:100',
             'last_name'      => 'required|string|max:100',
@@ -57,9 +63,21 @@ class CheckoutController extends Controller
             'postal_code'    => 'nullable|string|max:20',
             'payment_method' => 'required|in:cash_on_delivery,bank_transfer',
             'notes'          => 'nullable|string|max:1000',
+            'zone_id'        => $zones->isNotEmpty() ? 'required|exists:delivery_zones,id' : 'nullable',
         ]);
 
-        $totals  = $cart['totals'];
+        // Calcul du frais de livraison selon la zone choisie
+        $zone         = $zones->isNotEmpty() && ! empty($data['zone_id'])
+            ? $zones->firstWhere('id', $data['zone_id'])
+            : null;
+        $shippingCost = $zone ? (float) $zone->price : 0.0;
+
+        // L'adresse = nom de la zone choisie
+        if ($zone) {
+            $data['address'] = $zone->name;
+        }
+
+        $totals = $this->cartService->calculateTotals($cart['items'], $cart['coupon'], $shippingCost);
         $address = [
             'first_name'  => $data['first_name'],
             'last_name'   => $data['last_name'],

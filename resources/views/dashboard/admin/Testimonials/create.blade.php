@@ -1,5 +1,5 @@
 @extends('dashboard.admin.layout.app')
-@section('Dashboard - Agribusiness Shop', 'Ajouter un témoignage')
+@section('title', 'Ajouter un témoignage')
 @section('contents')
 <div class="container-fluid px-4">
     <h1 class="mt-4">Ajouter un témoignage</h1>

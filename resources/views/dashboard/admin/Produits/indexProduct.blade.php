@@ -1,5 +1,5 @@
 @extends('dashboard.admin.layout.app')
-@section('Dashboard - Agribusiness Shop', 'Produits')
+@section('title', 'Produits')
 @section('contents')
 <div class="container-fluid px-4">
     <h1 class="mt-4">Produits</h1>

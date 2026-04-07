@@ -1,6 +1,6 @@
 @extends('dashboard.admin.layout.app')
 
-@section('Dashboard - Agribusiness Shop', "401")
+@section('title', "401")
 
 @section('contents')
         <div id="layoutError">

@@ -65,7 +65,7 @@
                                                 </div>
                                             </li>
                                             @isset($categories)
-                                            @foreach($categories as $cat)
+                                            @foreach($categories->take(5) as $cat)
                                             <li>
                                                 <div class="d-flex justify-content-between fruite-name">
                                                     <a href="{{ route('shop.index', ['category' => $cat->slug]) }}"
@@ -76,9 +76,52 @@
                                                 </div>
                                             </li>
                                             @endforeach
+
+                                            @if($categories->count() > 5)
+                                            <div id="extra-categories" style="display:none;">
+                                                @foreach($categories->skip(5) as $cat)
+                                                <li>
+                                                    <div class="d-flex justify-content-between fruite-name">
+                                                        <a href="{{ route('shop.index', ['category' => $cat->slug]) }}"
+                                                            class="{{ request('category') === $cat->slug ? 'fw-bold text-primary' : '' }}">
+                                                            {{ $cat->name }}
+                                                        </a>
+                                                        <span>({{ $cat->products_count }})</span>
+                                                    </div>
+                                                </li>
+                                                @endforeach
+                                            </div>
+                                            <li class="mt-1">
+                                                <button type="button" id="toggle-categories"
+                                                    class="btn btn-link p-0 text-primary small fw-semibold text-decoration-none"
+                                                    onclick="toggleCategories()">
+                                                    <i class="fa fa-chevron-down me-1" id="toggle-icon" style="font-size:.7rem;"></i>
+                                                    Voir plus ({{ $categories->count() - 5 }})
+                                                </button>
+                                            </li>
+                                            @endif
                                             @endisset
                                         </ul>
                                     </div>
+                                    <script>
+                                    function toggleCategories() {
+                                        const el   = document.getElementById('extra-categories');
+                                        const btn  = document.getElementById('toggle-categories');
+                                        const icon = document.getElementById('toggle-icon');
+                                        const open = el.style.display === 'none';
+                                        el.style.display  = open ? 'block' : 'none';
+                                        icon.className    = open ? 'fa fa-chevron-up me-1' : 'fa fa-chevron-down me-1';
+                                        icon.style.fontSize = '.7rem';
+                                        @isset($categories)
+                                        btn.innerHTML = (open ? '<i class="fa fa-chevron-up me-1" style="font-size:.7rem;"></i>Voir moins' : '<i class="fa fa-chevron-down me-1" style="font-size:.7rem;"></i>Voir plus ({{ $categories->count() - 5 }})');
+                                        @endisset
+                                    }
+                                    @isset($categories)
+                                    @if($categories->count() > 5 && $categories->skip(5)->contains('slug', request('category')))
+                                    document.addEventListener('DOMContentLoaded', () => toggleCategories());
+                                    @endif
+                                    @endisset
+                                    </script>
                                 </div>
 
                                 {{-- Filtre prix --}}

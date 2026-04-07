@@ -1,6 +1,6 @@
 @extends('dashboard.admin.layout.app')
 
-@section('Dashboard - Agribusiness Shop', "Details d'un produit")
+@section('title', "Details d'un produit")
 
 @section('contents')
     <!-- Single Page Header start -->

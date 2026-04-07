@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://127.0.0.1:8000/shop/ananas-victoria-la-piece\")",
+      "Bash(curl -s \"http://127.0.0.1:8000/shop/ananas-victoria-la-piece\")",
+      "Bash(curl -s \"http://127.0.0.1:8000/shop/tilapia-frais-1-kg\")",
+      "Bash(composer dump-autoload:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://127.0.0.1:8000/search/suggest?q=ana\")",
+      "Bash(curl -s \"http://127.0.0.1:8000/search/suggest?q=ana\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/shop)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/cart)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/checkout)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/dashboard)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/login)",
+      "Bash(pkill -f \"php artisan serve\")",
+      "Bash(curl -s http://localhost:8000/api/v1/products)",
+      "Bash(python3 -m json.tool)",
+      "Bash(find \"/Users/massakambp12/Desktop/Massaka SAS/shop/resources/views/dashboard/admin\" -name \"*.blade.php\" -exec sed -i '' \"s/@section\\('Dashboard - Agribusiness Shop',/@section\\('title',/g\" {} \\\\;)"
+    ]
+  }
+}

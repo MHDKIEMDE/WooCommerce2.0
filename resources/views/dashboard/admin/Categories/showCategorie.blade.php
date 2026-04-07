@@ -1,7 +1,7 @@
 @extends('dashboard.admin.layout.app')
 
 @section('title', 'Détails de la catégorie')
-@section('Dashboard - Agribusiness Shop', "Détails d'un catégorie")
+@section('title', "Détails d'un catégorie")
 
 @section('contents')
     <div id="layoutAuthentication">

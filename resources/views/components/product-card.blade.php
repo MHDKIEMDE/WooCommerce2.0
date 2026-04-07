@@ -11,97 +11,97 @@
 @endphp
 
 <div class="rounded position-relative fruite-item">
-    <div class="fruite-img">
+
+    {{-- Image + badges + boutons superposés --}}
+    <div class="fruite-img position-relative overflow-hidden rounded-top">
         <a href="{{ route('shop.show', $product->slug) }}">
             <img src="{{ $img ? $img->url : asset('img/fruite-item-1.jpg') }}"
                 class="img-fluid w-100 rounded-top"
-                style="height:200px; object-fit:cover;"
+                style="height:180px; object-fit:cover;"
                 alt="{{ $product->name }}"
                 loading="lazy">
         </a>
-    </div>
 
-    {{-- Badge catégorie --}}
-    @if($product->category)
-    <div class="text-white bg-secondary px-3 py-1 rounded position-absolute"
-        style="top: 10px; left: 10px; font-size: .8rem;">
-        {{ $product->category->name }}
-    </div>
-    @endif
-
-    {{-- Badge remise --}}
-    @if($hasDiscount)
-    <div class="text-white bg-danger px-2 py-1 rounded position-absolute"
-        style="top: 10px; right: 10px; font-size: .75rem;">
-        -{{ $discountPct }}%
-    </div>
-    @endif
-
-    {{-- Badge rupture stock --}}
-    @if($product->stock_quantity <= 0)
-    <div class="text-white bg-dark px-2 py-1 rounded position-absolute"
-        style="bottom: 10px; left: 10px; font-size: .75rem; opacity: .85;">
-        Rupture de stock
-    </div>
-    @endif
-
-    <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-        <h4 class="mb-1">
-            <a href="{{ route('shop.show', $product->slug) }}" class="text-dark text-decoration-none">
-                {{ $product->name }}
-            </a>
-        </h4>
-        @if($product->short_description)
-        <p class="text-truncate mb-2 text-muted small">{{ $product->short_description }}</p>
-        @endif
-
-        {{-- Notes --}}
-        @if($product->rating_count > 0)
-        <div class="d-flex align-items-center gap-1 mb-2">
-            @for($i = 1; $i <= 5; $i++)
-                <i class="fa fa-star{{ $i <= round($product->rating_avg) ? ' text-secondary' : ' text-muted' }}"
-                   style="font-size:.75rem;"></i>
-            @endfor
-            <small class="text-muted">({{ $product->rating_count }})</small>
+        {{-- Badge catégorie --}}
+        @if($product->category)
+        <div class="text-white bg-secondary px-2 py-1 rounded position-absolute"
+            style="top:8px; left:8px; font-size:.7rem;">
+            {{ $product->category->name }}
         </div>
         @endif
 
-        <div class="d-flex justify-content-between flex-lg-wrap align-items-center gap-2">
-            <div>
-                <span class="text-dark fs-5 fw-bold">
+        {{-- Badge remise --}}
+        @if($hasDiscount)
+        <div class="text-white bg-danger px-2 py-1 rounded position-absolute"
+            style="top:8px; right:8px; font-size:.7rem;">
+            -{{ $discountPct }}%
+        </div>
+        @endif
+
+        {{-- Badge rupture --}}
+        @if($product->stock_quantity <= 0)
+        <div class="text-white bg-dark px-2 py-1 rounded position-absolute"
+            style="bottom:8px; left:8px; font-size:.7rem; opacity:.85;">
+            Rupture
+        </div>
+        @endif
+
+        {{-- Prix + boutons en overlay sur l'image --}}
+        <div class="position-absolute bottom-0 end-0 p-2 d-flex flex-column align-items-end gap-1">
+            {{-- Prix --}}
+            <div class="bg-white bg-opacity-90 rounded px-2 py-1 lh-1 text-end shadow-sm">
+                <span class="fw-bold text-dark" style="font-size:.85rem;">
                     {{ number_format($product->price, 0, ',', ' ') }} FCFA
+                    @if($product->unit)<small class="text-muted fw-normal" style="font-size:.7rem;">/ {{ $product->unit }}</small>@endif
                 </span>
                 @if($hasDiscount)
-                <span class="text-muted text-decoration-line-through ms-1 small">
-                    {{ number_format($product->compare_price, 0, ',', ' ') }} FCFA
-                </span>
-                @endif
-                @if($product->unit)
-                <span class="text-muted small"> / {{ $product->unit }}</span>
+                <div class="text-muted text-decoration-line-through" style="font-size:.7rem;">
+                    {{ number_format($product->compare_price, 0, ',', ' ') }}
+                </div>
                 @endif
             </div>
 
+            {{-- Boutons --}}
             <div class="d-flex gap-1">
-                {{-- Ajout au panier --}}
                 @if($product->stock_quantity > 0)
                 <form method="POST" action="{{ route('cart.add') }}">
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <input type="hidden" name="quantity" value="1">
                     <button type="submit"
-                        class="btn border border-secondary rounded-pill px-3 text-primary btn-sm"
+                        class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center shadow"
+                        style="width:32px;height:32px;padding:0;"
                         title="Ajouter au panier">
-                        <i class="fa fa-shopping-bag text-primary"></i>
+                        <i class="fa fa-shopping-bag" style="font-size:.7rem;"></i>
                     </button>
                 </form>
                 @endif
 
                 <a href="{{ route('shop.show', $product->slug) }}"
-                    class="btn border border-secondary rounded-pill px-3 text-primary btn-sm"
+                    class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center shadow"
+                    style="width:32px;height:32px;padding:0;"
                     title="Voir le produit">
-                    <i class="fa fa-eye text-primary"></i>
+                    <i class="fa fa-eye text-primary" style="font-size:.7rem;"></i>
                 </a>
             </div>
         </div>
     </div>
+
+    {{-- Nom uniquement --}}
+    <div class="px-3 py-2 border border-secondary border-top-0 rounded-bottom">
+        <h6 class="mb-0 text-truncate">
+            <a href="{{ route('shop.show', $product->slug) }}" class="text-dark text-decoration-none">
+                {{ $product->name }}
+            </a>
+        </h6>
+        @if($product->rating_count > 0)
+        <div class="d-flex align-items-center gap-1 mt-1">
+            @for($i = 1; $i <= 5; $i++)
+                <i class="fa fa-star{{ $i <= round($product->rating_avg) ? ' text-secondary' : ' text-muted' }}"
+                   style="font-size:.6rem;"></i>
+            @endfor
+        </div>
+        @endif
+    </div>
+
 </div>

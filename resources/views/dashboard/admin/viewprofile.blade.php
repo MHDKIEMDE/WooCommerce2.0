@@ -1,6 +1,6 @@
 @extends('dashboard.admin.layout.app')
 
-@section('Dashboard - Agribusiness Shop', "Profiles de utilisateur selectionner")
+@section('title', "Profiles de utilisateur selectionner")
 
 @section('contents')
     <div class="container-fluid px-4">

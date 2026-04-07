@@ -1,5 +1,5 @@
 @extends('dashboard.admin.layout.app')
-@section('Dashboard - Agribusiness Shop', 'Bannière & Statistiques')
+@section('title', 'Bannière & Statistiques')
 @section('contents')
 <div class="container-fluid px-4">
     <h1 class="mt-4">Bannière principale & Statistiques</h1>

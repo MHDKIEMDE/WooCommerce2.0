@@ -20,6 +20,7 @@ use App\Http\Controllers\Web\Admin\DashboardController;
 use App\Http\Controllers\Web\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Web\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Web\Admin\StockController as AdminStockController;
+use App\Http\Controllers\Web\Admin\DeliveryZoneController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -118,4 +119,5 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('dashboard')->name
     Route::put('shop-settings', [ShopSettingsController::class, 'update'])->name('shop-settings.update');
     Route::get('theme-settings', [ThemeSettingsController::class, 'edit'])->name('theme-settings.edit');
     Route::put('theme-settings', [ThemeSettingsController::class, 'update'])->name('theme-settings.update');
+    Route::resource('delivery-zones', DeliveryZoneController::class)->only(['index', 'store', 'update', 'destroy']);
 });

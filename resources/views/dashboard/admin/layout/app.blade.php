@@ -4,7 +4,8 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>@yield('title', 'Dashboard') — Admin</title>
+    @php $shopName = \App\Models\Setting::get('shop_name', config('app.name')); @endphp
+    <title>@yield('title', 'Dashboard') — {{ $shopName }}</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
@@ -153,6 +154,10 @@
                         <a class="nav-link {{ request()->routeIs('admin.stock.*') ? 'active' : '' }}"
                            href="{{ route('admin.stock.index') }}">
                             <i class="fas fa-boxes"></i> Gestion du stock
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('admin.delivery-zones.*') ? 'active' : '' }}"
+                           href="{{ route('admin.delivery-zones.index') }}">
+                            <i class="fas fa-truck"></i> Zones de livraison
                         </a>
 
                         <div class="sb-sidenav-menu-heading">Utilisateurs</div>

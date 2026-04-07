@@ -141,14 +141,13 @@ class CartService
 
     // ── Calcul des totaux ─────────────────────────────────────────────────
 
-    public function calculateTotals(Collection $items, ?Coupon $coupon = null): array
+    public function calculateTotals(Collection $items, ?Coupon $coupon = null, float $shippingCost = 0.0): array
     {
-        $subtotal     = $this->calculateSubtotal($items);
-        $shippingCost = $subtotal >= 50 ? 0.0 : 5.90;
-        $discount     = $coupon ? $this->couponService->calculateDiscount($coupon, $subtotal) : 0.0;
-        $taxBase      = $subtotal - $discount;
-        $taxAmount    = round($taxBase * 0.20, 2); // TVA 20% par défaut
-        $total        = round($taxBase + $shippingCost, 2);
+        $subtotal  = $this->calculateSubtotal($items);
+        $discount  = $coupon ? $this->couponService->calculateDiscount($coupon, $subtotal) : 0.0;
+        $taxBase   = $subtotal - $discount;
+        $taxAmount = round($taxBase * 0.20, 2);
+        $total     = round($taxBase + $shippingCost, 2);
 
         return compact('subtotal', 'shippingCost', 'discount', 'taxAmount', 'total');
     }

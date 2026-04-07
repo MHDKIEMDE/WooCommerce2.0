@@ -1,6 +1,6 @@
 @extends('dashboard.admin.layout.app')
 
-@section('Dashboard - Agribusiness Shop', "")
+@section('title', "")
 
 @section('contents')
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">

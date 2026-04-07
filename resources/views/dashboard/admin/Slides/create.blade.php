@@ -1,6 +1,6 @@
 @extends('dashboard.admin.layout.app')
 
-@section('Dashboard - Agribusiness Shop', 'Ajouter un slide')
+@section('title', 'Ajouter un slide')
 
 @section('contents')
 <div class="container-fluid px-4">

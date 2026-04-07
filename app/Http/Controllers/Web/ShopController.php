@@ -204,7 +204,16 @@ class ShopController extends Controller
                 ->withQueryString();
         }
 
-        return view('shop', compact('products', 'q'));
+        $categories = Cache::remember('categories:with_products', now()->addMinutes(30), fn () =>
+            Category::whereNull('parent_id')
+                ->where('is_active', true)
+                ->whereHas('products', fn ($q) => $q->where('status', 'active'))
+                ->withCount(['products' => fn ($q) => $q->where('status', 'active')])
+                ->orderBy('sort_order')
+                ->get()
+        );
+
+        return view('shop', compact('products', 'q', 'categories'));
     }
 
     /** Auto-suggest AJAX : retourne max 8 résultats en JSON */

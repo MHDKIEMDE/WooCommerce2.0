@@ -228,3 +228,12 @@ php artisan test --coverage
 
 *Voir [cahier_des_charges.md](cahier_des_charges.md) pour les spécifications complètes.*
 *Développé par MHDKIEMDE — Mars 2026*
+
+
+
+image.png
+472×458
+Sur la page d'accueilapres le formulaire de recherche ya une section qui ecouter les categorie fait moi des seeder pour voir comment il son affichier pour mieux travail 
+
+apres ca tu peux push a mon nom
+You've hit your limit · resets 7pm (Africa/Ouagadougou)
