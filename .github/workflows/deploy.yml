@@ -1,6 +1,5 @@
 name: 🚀 Deploy to VPS
 
-# Déclenché automatiquement à chaque push sur main
 on:
   push:
     branches:
@@ -13,11 +12,9 @@ jobs:
 
     steps:
 
-      # ── Récupérer le code sur le runner GitHub ────────────────────────────
       - name: 📥 Checkout
         uses: actions/checkout@v4.2.2
 
-      # ── Connexion SSH + script de déploiement sur le VPS ─────────────────
       - name: 🔐 SSH & Deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -25,51 +22,38 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          script_stop: true   # stoppe tout si une commande échoue
+          script_stop: true
 
           script: |
 
-            # ── 1. Mettre à jour le code Laravel ─────────────────────────
+            # ── 1. Mettre à jour le code ──────────────────────────────────
             echo "📥 Git pull..."
-            cd /var/www/shop
+            cd /var/www/shop/WooCommerce2.0
             git pull origin main
 
-            # ── 2. Rebuild le container PHP (nouveau code + dépendances) ─
-            echo "🐳 Docker build..."
-            cd /docker/shop
-            docker compose build php --no-cache
-
-            # ── 3. Redémarrer les containers ──────────────────────────────
-            echo "🔄 Docker up..."
-            docker compose up -d
-
-            # ── 4. Installer les dépendances Composer dans le container ──
+            # ── 2. Dépendances Composer ───────────────────────────────────
             echo "📦 Composer install..."
-            docker compose exec -T php composer install \
-              --no-dev \
-              --optimize-autoloader \
-              --no-interaction \
-              --prefer-dist
+            composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-            # ── 5. Migrations ─────────────────────────────────────────────
+            # ── 3. Migrations ─────────────────────────────────────────────
             echo "🗄️  Migrations..."
-            docker compose exec -T php php artisan migrate --force
+            php artisan migrate --force
 
-            # ── 6. Caches production ──────────────────────────────────────
+            # ── 4. Caches production ──────────────────────────────────────
             echo "⚡ Caches..."
-            docker compose exec -T php php artisan config:cache
-            docker compose exec -T php php artisan route:cache
-            docker compose exec -T php php artisan view:cache
-            docker compose exec -T php php artisan event:cache
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan event:cache
 
-            # ── 7. Redémarrer les queues ──────────────────────────────────
+            # ── 5. Redémarrer les queues ──────────────────────────────────
             echo "🔁 Queue restart..."
-            docker compose exec -T php php artisan queue:restart
+            php artisan queue:restart
 
-            # ── 8. Permissions storage ────────────────────────────────────
+            # ── 6. Permissions storage ────────────────────────────────────
             echo "🔒 Permissions..."
-            docker compose exec -T php chmod -R 775 storage bootstrap/cache
-            docker compose exec -T php chown -R www-data:www-data storage bootstrap/cache
+            chmod -R 775 storage bootstrap/cache
+            chown -R www-data:www-data storage bootstrap/cache
 
             echo ""
             echo "✅ Déploiement terminé → shop.monghetto.com"
