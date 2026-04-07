@@ -15,7 +15,7 @@ jobs:
 
       # ── Récupérer le code sur le runner GitHub ────────────────────────────
       - name: 📥 Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       # ── Connexion SSH + script de déploiement sur le VPS ─────────────────
       - name: 🔐 SSH & Deploy
