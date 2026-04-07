@@ -209,7 +209,7 @@
                 <div class="container-fluid px-4">
                     <div class="d-flex align-items-center justify-content-between small text-muted">
                         <span>
-                            &copy; {{ date('Y') }} {{ \App\Models\Setting::get('shop_name', 'Massaka SAS') }}
+                            &copy; {{ date('Y') }} {{ \App\Models\Setting::get('shop_name', config('app.name')) }}
                             — Tous droits réservés
                         </span>
                         <span>Administration</span>

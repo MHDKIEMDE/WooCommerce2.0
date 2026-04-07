@@ -1,14 +1,14 @@
 @extends('layouts.app')
 @section('seo_title', \App\Models\Setting::get('shop_name', config('app.name')))
-@section('seo_description', \App\Models\Setting::get('shop_tagline', 'Produits frais livrés chez vous.'))
+@section('seo_description', \App\Models\Setting::get('shop_tagline', config('app.name')))
 @section('content')
     <!-- Hero Start -->
     <div class="container-fluid py-5 mb-5 hero-header">
         <div class="container py-5">
             <div class="row g-5 align-items-center">
                 <div class="col-12 col-lg-7 order-2 order-lg-1">
-                    <h4 class="mb-3 text-secondary">{{ $banner['banner_subtitle'] ?? 'Aliments 100 % biologiques' }}</h4>
-                    <h1 class="mb-5 display-3 text-primary">{{ $banner['banner_title'] ?? 'Aliments biologiques à base de fruits' }}</h1>
+                    <h4 class="mb-3 text-secondary">{{ $banner['banner_subtitle'] ?? \App\Models\Setting::get('shop_tagline', config('app.name')) }}</h4>
+                    <h1 class="mb-5 display-3 text-primary">{{ $banner['banner_title'] ?? \App\Models\Setting::get('shop_name', config('app.name')) }}</h1>
                     <form action="{{ route('shop.search') }}" method="GET">
                         <div class="position-relative w-100">
                             <input class="form-control border-2 border-secondary w-100 py-3 ps-4 pe-5 rounded-pill"
@@ -263,8 +263,8 @@
             <div class="row g-4 align-items-center">
                 <div class="col-lg-6">
                     <div class="py-4">
-                        <h1 class="display-3 text-white">{{ $banner['banner_title'] ?? 'Fruits frais exotiques' }}</h1>
-                        <p class="fw-normal display-3 text-dark mb-4">{{ $banner['banner_subtitle'] ?? 'dans notre magasin' }}</p>
+                        <h1 class="display-3 text-white">{{ $banner['banner_title'] ?? \App\Models\Setting::get('shop_name', config('app.name')) }}</h1>
+                        <p class="fw-normal display-3 text-dark mb-4">{{ $banner['banner_subtitle'] ?? \App\Models\Setting::get('shop_tagline', '') }}</p>
                         <p class="mb-4 text-dark">{{ $banner['banner_description'] ?? '' }}</p>
                         <a href="{{ $banner['banner_button_url'] ?? '/shop' }}"
                             class="banner-btn btn border-2 border-white rounded-pill text-dark py-3 px-5">

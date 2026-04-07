@@ -11,16 +11,16 @@ class SettingSeeder extends Seeder
     {
         $settings = [
             // Boutique
-            ['key' => 'shop_name',     'value' => 'Massaka SAS',                             'group' => 'shop'],
-            ['key' => 'shop_tagline',  'value' => 'Produits frais livrés chez vous en Côte d\'Ivoire', 'group' => 'shop'],
-            ['key' => 'shop_email',    'value' => 'contact@massaka.ci',                      'group' => 'shop'],
-            ['key' => 'shop_phone',    'value' => '+225 07 00 00 00 00',                     'group' => 'shop'],
-            ['key' => 'shop_address',  'value' => 'Cocody, Abidjan, Côte d\'Ivoire',         'group' => 'shop'],
-            ['key' => 'shop_currency', 'value' => 'XOF',                                     'group' => 'shop'],
-            ['key' => 'shop_locale',   'value' => 'fr_CI',                                   'group' => 'shop'],
+            ['key' => 'shop_name',     'value' => env('APP_NAME', 'Ma Boutique'),            'group' => 'shop'],
+            ['key' => 'shop_tagline',  'value' => 'Bienvenue dans notre boutique en ligne',  'group' => 'shop'],
+            ['key' => 'shop_email',    'value' => '',                                        'group' => 'shop'],
+            ['key' => 'shop_phone',    'value' => '',                                        'group' => 'shop'],
+            ['key' => 'shop_address',  'value' => '',                                        'group' => 'shop'],
+            ['key' => 'shop_currency', 'value' => 'EUR',                                     'group' => 'shop'],
+            ['key' => 'shop_locale',   'value' => 'fr_FR',                                   'group' => 'shop'],
 
-            // Thème (vert agri)
-            ['key' => 'primary_color',        'value' => '#81C408', 'group' => 'theme'],
+            // Thème (neutre — modifiable depuis le dashboard)
+            ['key' => 'primary_color',        'value' => '#0d6efd', 'group' => 'theme'],
             ['key' => 'primary_text_color',   'value' => '#ffffff', 'group' => 'theme'],
             ['key' => 'secondary_color',      'value' => '#FFB524', 'group' => 'theme'],
             ['key' => 'secondary_text_color', 'value' => '#ffffff', 'group' => 'theme'],
@@ -31,8 +31,8 @@ class SettingSeeder extends Seeder
             ['key' => 'shipping_carrier',        'value' => 'Coursier local', 'group' => 'shipping'],
 
             // Taxes
-            ['key' => 'vat_default', 'value' => '18',   'group' => 'tax'],  // TVA CI = 18%
-            ['key' => 'vat_food',    'value' => '0',    'group' => 'tax'],  // Produits alimentaires exonérés
+            ['key' => 'vat_default', 'value' => '20',   'group' => 'tax'],
+            ['key' => 'vat_food',    'value' => '5.5',  'group' => 'tax'],
 
             // Réseaux sociaux
             ['key' => 'facebook',  'value' => '', 'group' => 'social'],
@@ -48,8 +48,8 @@ class SettingSeeder extends Seeder
             ['key' => 'whatsapp_enabled', 'value' => 'false', 'group' => 'notifications'],
 
             // Stock
-            ['key' => 'low_stock_threshold', 'value' => '5',                    'group' => 'stock'],
-            ['key' => 'stock_alert_email',   'value' => 'admin@massaka.ci',     'group' => 'stock'],
+            ['key' => 'low_stock_threshold', 'value' => '5',   'group' => 'stock'],
+            ['key' => 'stock_alert_email',   'value' => '',   'group' => 'stock'],
         ];
 
         foreach ($settings as $setting) {

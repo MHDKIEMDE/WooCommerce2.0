@@ -487,7 +487,7 @@
                              style="height:200px;object-fit:cover;">
                         <div class="position-absolute inset-0 w-100 h-100 d-flex flex-column justify-content-end p-4"
                              style="background:linear-gradient(0deg,rgba(0,0,0,.65) 0%,transparent 100%);">
-                            <h6 class="text-white fw-bold mb-1">Produits frais du jour</h6>
+                            <h6 class="text-white fw-bold mb-1">{{ \App\Models\Setting::get('shop_tagline', __('Notre boutique')) }}</h6>
                             <a href="{{ route('shop.index') }}"
                                class="btn btn-sm btn-primary rounded-pill px-4">
                                 Découvrir

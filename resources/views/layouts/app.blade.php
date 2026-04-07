@@ -9,7 +9,7 @@
         $seoTitle     = $seoTitle ? \Illuminate\Support\Str::limit($seoTitle, 60) : $shopName;
         $fullTitle    = $seoTitle === $shopName ? $shopName : $seoTitle . ' — ' . $shopName;
         $seoDesc      = trim(strip_tags($__env->yieldContent('seo_description')))
-                        ?: \App\Models\Setting::get('shop_tagline', 'Produits frais livrés chez vous.');
+                        ?: \App\Models\Setting::get('shop_tagline', config('app.name'));
         $seoImage     = trim($__env->yieldContent('seo_image')) ?: asset('img/hero.jpg');
         $seoCanonical = trim($__env->yieldContent('seo_canonical')) ?: url()->current();
     @endphp
