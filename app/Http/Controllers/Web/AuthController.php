@@ -68,7 +68,7 @@ class AuthController extends Controller
 
         $user->notify(new WelcomeNotification());
 
-        return redirect()->route('home');
+        return redirect()->intended(route('home'));
     }
 
     public function logout(Request $request): RedirectResponse
