@@ -85,15 +85,12 @@
             <nav class="sb-sidenav accordion" id="sidenavAccordion">
                 <div class="sb-sidenav-menu">
                     <div class="nav flex-column">
-
                         <div class="sb-sidenav-menu-heading">Vue d'ensemble</div>
                         <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
                            href="{{ route('admin.dashboard') }}">
                             <i class="fas fa-tachometer-alt"></i> Tableau de bord
                         </a>
-
                         <div class="sb-sidenav-menu-heading">Catalogue</div>
-
                         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
                            data-bs-target="#collapseProducts" aria-controls="collapseProducts">
                             <i class="fas fa-box-open"></i> Produits
