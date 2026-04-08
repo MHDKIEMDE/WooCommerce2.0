@@ -43,7 +43,7 @@ class CartController extends Controller
             return back()->withErrors(['cart' => $result['message']]);
         }
 
-        return back()->with('success', $result['message']);
+        return redirect()->route('cart.index')->with('success', $result['message']);
     }
 
     public function update(Request $request, int $id): RedirectResponse
