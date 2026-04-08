@@ -183,6 +183,10 @@
                            href="{{ route('admin.notification-settings.edit') }}">
                             <i class="fab fa-whatsapp"></i> Notifications WhatsApp
                         </a>
+                        <a class="nav-link {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}"
+                           href="{{ route('admin.notifications.index') }}">
+                            <i class="fas fa-bell"></i> Notifications Push
+                        </a>
 
                     </div>
                 </div>
