@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Address;
+use App\Models\Order;
+use App\Models\Setting;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -115,6 +119,22 @@ class AccountController extends Controller
         $user->addresses()->update(['is_default' => false]);
         $user->addresses()->findOrFail($id)->update(['is_default' => true]);
         return back()->with('success', 'Adresse principale définie.');
+    }
+
+    public function downloadInvoice(Request $request, int $id): Response
+    {
+        $order = Order::where('user_id', $request->user()->id)->with(['items', 'user'])->findOrFail($id);
+        $shop  = Setting::getGroup('shop');
+
+        $pdf = Pdf::loadView('pdf.invoice', [
+            'order'       => $order,
+            'shopName'    => $shop['shop_name'] ?? config('app.name'),
+            'shopAddress' => $shop['shop_address'] ?? null,
+            'shopPhone'   => $shop['shop_phone'] ?? null,
+            'shopEmail'   => $shop['shop_email'] ?? null,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download("facture-{$order->order_number}.pdf");
     }
 
     public function changePassword(Request $request): RedirectResponse

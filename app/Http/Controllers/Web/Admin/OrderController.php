@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Setting;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class OrderController extends Controller
 {
@@ -57,6 +60,22 @@ class OrderController extends Controller
         $order->update(['status' => $request->status]);
 
         return back()->with('success', "Statut mis à jour : {$request->status}");
+    }
+
+    public function downloadInvoice(Order $order): Response
+    {
+        $order->load(['items', 'user']);
+        $shop = Setting::getGroup('shop');
+
+        $pdf = Pdf::loadView('pdf.invoice', [
+            'order'       => $order,
+            'shopName'    => $shop['shop_name'] ?? config('app.name'),
+            'shopAddress' => $shop['shop_address'] ?? null,
+            'shopPhone'   => $shop['shop_phone'] ?? null,
+            'shopEmail'   => $shop['shop_email'] ?? null,
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download("facture-{$order->order_number}.pdf");
     }
 
     public function updatePayment(Request $request, Order $order)

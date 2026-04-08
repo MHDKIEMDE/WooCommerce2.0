@@ -78,6 +78,7 @@ Route::get('/testimonial', [TestimonialController::class, 'index'])->name('testi
 Route::middleware('auth')->group(function () {
     Route::get('/account',                          [AccountController::class, 'profile'])->name('account.profile');
     Route::get('/account/orders',                   [AccountController::class, 'orders'])->name('account.orders');
+    Route::get('/account/orders/{id}/invoice',      [AccountController::class, 'downloadInvoice'])->name('account.orders.invoice');
     Route::get('/account/edit',                     [AccountController::class, 'editProfile'])->name('account.edit');
     Route::put('/account/edit',                     [AccountController::class, 'updateProfile'])->name('account.update');
     Route::post('/account/password',                [AccountController::class, 'changePassword'])->name('account.password');
@@ -101,6 +102,7 @@ Route::middleware(['auth', 'role:admin,super-admin'])->prefix('dashboard')->name
     Route::get('orders/{order}',          [AdminOrderController::class, 'show'])->name('orders.show');
     Route::patch('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.status');
     Route::patch('orders/{order}/payment',[AdminOrderController::class, 'updatePayment'])->name('orders.payment');
+    Route::get('orders/{order}/invoice', [AdminOrderController::class, 'downloadInvoice'])->name('orders.invoice');
     Route::get('stock',                   [AdminStockController::class, 'index'])->name('stock.index');
     Route::patch('stock/{product}',       [AdminStockController::class, 'update'])->name('stock.update');
     Route::resource('slides', SlideController::class);
