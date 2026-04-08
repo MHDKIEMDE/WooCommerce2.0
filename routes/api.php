@@ -43,6 +43,7 @@ Route::prefix('v1')->group(function () {
         Route::post('items',       [\App\Http\Controllers\Api\V1\CartController::class, 'addItem']);
         Route::patch('items/{id}', [\App\Http\Controllers\Api\V1\CartController::class, 'updateItem']);
         Route::delete('items/{id}',[\App\Http\Controllers\Api\V1\CartController::class, 'removeItem']);
+        Route::post('coupon/check', [\App\Http\Controllers\Api\V1\CartController::class, 'checkCoupon']);
         Route::post('coupon',      [\App\Http\Controllers\Api\V1\CartController::class, 'applyCoupon']);
         Route::delete('coupon',    [\App\Http\Controllers\Api\V1\CartController::class, 'removeCoupon']);
         Route::delete('/',         [\App\Http\Controllers\Api\V1\CartController::class, 'clear']);

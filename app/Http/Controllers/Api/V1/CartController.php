@@ -4,13 +4,17 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Resources\CartResource;
 use App\Services\CartService;
+use App\Services\CouponService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CartController extends BaseApiController
 {
-    public function __construct(private CartService $cartService) {}
+    public function __construct(
+        private CartService $cartService,
+        private CouponService $couponService,
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -78,6 +82,25 @@ class CartController extends BaseApiController
         }
 
         return $this->success(null, 'Article supprimé.');
+    }
+
+    public function checkCoupon(Request $request): JsonResponse
+    {
+        $request->validate(['code' => 'required|string|max:50']);
+
+        $cart   = $this->cartService->getCart(Auth::guard('sanctum')->user());
+        $result = $this->couponService->validate($request->code, $cart['totals']['subtotal']);
+
+        if (! $result['valid']) {
+            return $this->error($result['message'], 422);
+        }
+
+        return $this->success([
+            'code'     => strtoupper($request->code),
+            'type'     => $result['coupon']->type,
+            'value'    => $result['coupon']->value,
+            'discount' => $result['discount'],
+        ], $result['message']);
     }
 
     public function applyCoupon(Request $request): JsonResponse
