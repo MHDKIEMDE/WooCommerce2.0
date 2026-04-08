@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('Agribusiness Shop', '404 Error')
+@section('seo_title', 'Page non trouvée')
 @section('content')
     <!-- Single Page Header start -->
     <div class="container-fluid page-header py-5">
