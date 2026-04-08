@@ -118,6 +118,11 @@
                                                     class="btn btn-sm btn-outline-primary rounded-pill">
                                                     Détails
                                                 </a>
+                                                <a href="{{ route('account.orders.invoice', $order->id) }}"
+                                                    class="btn btn-sm btn-outline-secondary rounded-pill ms-1"
+                                                    title="Télécharger la facture">
+                                                    <i class="bi bi-file-earmark-pdf"></i> Facture
+                                                </a>
                                             </td>
                                         </tr>
                                         @endforeach

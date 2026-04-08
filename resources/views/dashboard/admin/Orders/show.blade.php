@@ -7,6 +7,9 @@
             <i class="fas fa-arrow-left me-1"></i>Retour
         </a>
         <h1 class="mb-0">{{ $order->order_number }}</h1>
+        <a href="{{ route('admin.orders.invoice', $order) }}" class="btn btn-outline-danger btn-sm ms-auto">
+            <i class="bi bi-file-earmark-pdf me-1"></i>Télécharger la facture
+        </a>
         @php $sColors = ['pending'=>'warning','processing'=>'info','shipped'=>'primary','delivered'=>'success','cancelled'=>'danger']; @endphp
         <span class="badge bg-{{ $sColors[$order->status] ?? 'secondary' }} fs-6">{{ ucfirst($order->status) }}</span>
     </div>
