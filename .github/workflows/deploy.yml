@@ -8,54 +8,42 @@ on:
 jobs:
   deploy:
     name: Deploy → shop.monghetto.com
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
 
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
+      - name: 📥 Mise à jour du code
+        run: |
+          cd /var/www/shop/Agri---Sho
+          git fetch origin
+          git reset --hard origin/main
 
-      - name: 🔐 SSH & Deploy
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script_stop: true
+      - name: 🐳 Docker build & up
+        run: |
+          cd /var/www/shop/Agri---Sho/docker
+          docker compose build
+          docker compose up -d
 
-          script: |
+      - name: 🗄️ Migrations
+        run: |
+          cd /var/www/shop/Agri---Sho/docker
+          docker compose exec -T app php artisan migrate --force
 
-            # ── 1. Mise à jour du code ─────────────────────────────────────
-            echo "📥 Git pull..."
-            cd /var/www/shop/Agri---Shop
-            git fetch origin
-            git reset --hard origin/main
+      - name: ⚡ Caches production
+        run: |
+          cd /var/www/shop/Agri---Sho/docker
+          docker compose exec -T app php artisan config:cache
+          docker compose exec -T app php artisan route:cache
+          docker compose exec -T app php artisan view:cache
+          docker compose exec -T app php artisan event:cache
 
-            # ── 2. Build et redémarrage des containers ─────────────────────
-            echo "🐳 Docker build & up..."
-            cd docker
-            docker compose build
-            docker compose up -d
+      - name: 🔁 Queue restart
+        run: |
+          cd /var/www/shop/Agri---Sho/docker
+          docker compose exec -T app php artisan queue:restart
 
-            # ── 3. Migrations ──────────────────────────────────────────────
-            echo "🗄️  Migrations..."
-            docker compose exec -T app php artisan migrate --force
+      - name: 🧹 Nettoyage Docker
+        run: docker image prune -f
 
-            # ── 4. Caches production ───────────────────────────────────────
-            echo "⚡ Caches..."
-            docker compose exec -T app php artisan config:cache
-            docker compose exec -T app php artisan route:cache
-            docker compose exec -T app php artisan view:cache
-            docker compose exec -T app php artisan event:cache
-
-            # ── 5. Redémarrer les queues ───────────────────────────────────
-            echo "🔁 Queue restart..."
-            docker compose exec -T app php artisan queue:restart
-
-            # ── 6. Nettoyer les images inutilisées ─────────────────────────
-            echo "🧹 Nettoyage Docker..."
-            docker image prune -f
-
-            echo ""
-            echo "✅ Déploiement terminé → shop.monghetto.com"
+      - name: ✅ Terminé
+        run: echo "Déploiement terminé → shop.monghetto.com"
