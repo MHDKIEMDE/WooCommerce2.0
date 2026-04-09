@@ -36,8 +36,5 @@ class UserSeeder extends Seeder
             'role'      => 'customer',
             'is_active' => true,
         ]);
-
-        // Clients de test (utilise UserFactory)
-        User::factory()->count(10)->create();
     }
 }
