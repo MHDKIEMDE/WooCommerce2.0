@@ -16,7 +16,8 @@
       "Bash(pkill -f \"php artisan serve\")",
       "Bash(curl -s http://localhost:8000/api/v1/products)",
       "Bash(python3 -m json.tool)",
-      "Bash(find \"/Users/massakambp12/Desktop/Massaka SAS/shop/resources/views/dashboard/admin\" -name \"*.blade.php\" -exec sed -i '' \"s/@section\\('Dashboard - Agribusiness Shop',/@section\\('title',/g\" {} \\\\;)"
+      "Bash(find \"/Users/massakambp12/Desktop/Massaka SAS/shop/resources/views/dashboard/admin\" -name \"*.blade.php\" -exec sed -i '' \"s/@section\\('Dashboard - Agribusiness Shop',/@section\\('title',/g\" {} \\\\;)",
+      "Bash(composer require:*)"
     ]
   }
 }

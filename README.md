@@ -237,3 +237,102 @@ Sur la page d'accueilapres le formulaire de recherche ya une section qui ecouter
 
 apres ca tu peux push a mon nom
 You've hit your limit · resets 7pm (Africa/Ouagadougou)
+
+
+APP_ENV=production
+APP_KEY=                          # LAISSER VIDE → généré automatiquement au 1er démarrage
+APP_DEBUG=false
+APP_URL=https://shop.monghetto.com
+
+LOG_CHANNEL=stack
+LOG_LEVEL=warning
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BASE DE DONNÉES — SQLite (fichier dans le volume Docker)
+# ─────────────────────────────────────────────────────────────────────────────
+DB_CONNECTION=sqlite
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CACHE & QUEUE — Redis (service Docker "redis")
+# ─────────────────────────────────────────────────────────────────────────────
+CACHE_STORE=redis
+QUEUE_CONNECTION=redis
+SESSION_DRIVER=redis
+SESSION_LIFETIME=120
+
+REDIS_HOST=redis
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+REDIS_CACHE_DB=0
+REDIS_QUEUE_DB=1
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EMAIL — À COMPLÉTER
+# ─────────────────────────────────────────────────────────────────────────────
+MAIL_MAILER=smtp
+MAIL_HOST=
+MAIL_PORT=587
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@shop.monghetto.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PAIEMENT — STRIPE — À COMPLÉTER
+# https://dashboard.stripe.com/apikeys
+# ─────────────────────────────────────────────────────────────────────────────
+STRIPE_KEY=
+STRIPE_SECRET=
+STRIPE_WEBHOOK_SECRET=
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NOTIFICATIONS PUSH — FIREBASE / FCM — À COMPLÉTER
+# ─────────────────────────────────────────────────────────────────────────────
+FCM_PROJECT_ID=
+FCM_CREDENTIALS_PATH=/var/www/html/firebase-service-account.json
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SANCTUM — API tokens Flutter
+# ─────────────────────────────────────────────────────────────────────────────
+SANCTUM_STATEFUL_DOMAINS=shop.monghetto.com
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STOCKAGE FICHIERS
+# ─────────────────────────────────────────────────────────────────────────────
+FILESYSTEM_DISK=public
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WHATSAPP — CallMeBot — À COMPLÉTER
+# ─────────────────────────────────────────────────────────────────────────────
+WHATSAPP_PHONE=
+WHATSAPP_CALLMEBOT_APIKEY=
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VITE
+# ─────────────────────────────────────────────────────────────────────────────
+VITE_APP_NAME="${APP_NAME}"
+VITE_STRIPE_KEY="${STRIPE_KEY}"
+Fichier créé : .env.vps
+
+Ce qui est déjà configuré pour la production :
+
+APP_URL=https://shop.monghetto.com
+DB_CONNECTION=sqlite (pas de credentials MySQL)
+REDIS_HOST=redis (nom du service docker-compose)
+APP_KEY vide → généré automatiquement au 1er démarrage par l'entrypoint
+APP_DEBUG=false, LOG_LEVEL=warning
+Ce que tu dois renseigner avant de l'envoyer sur le VPS :
+
+STRIPE_KEY / STRIPE_SECRET / STRIPE_WEBHOOK_SECRET
+MAIL_HOST / MAIL_USERNAME / MAIL_PASSWORD
+FCM_PROJECT_ID
+WHATSAPP_PHONE / WHATSAPP_CALLMEBOT_APIKEY
+Une fois complété, tu l'envoies sur le VPS avec :
+
+
+scp .env.vps root@srv823208:/var/www/shop/.env
+root@srv823208:/var/www/shop# scp .env.vps root@srv823208:/var/www/shop/.env
+scp: stat local ".env.vps": No such file or directory
+root@srv823208:/var/www/shop#
+You've hit your limit · resets 1pm (Africa/Ouagadougou)
