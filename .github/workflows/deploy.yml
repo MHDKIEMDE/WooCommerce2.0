@@ -14,24 +14,24 @@ jobs:
 
       - name: 📥 Mise à jour du code
         run: |
-          cd /var/www/shop/Agri---Sho
+          cd /var/www/shop
           git fetch origin
           git reset --hard origin/main
 
       - name: 🐳 Docker build & up
         run: |
-          cd /var/www/shop/Agri---Sho/docker
+          cd /var/www/shop/docker
           docker compose build
           docker compose up -d
 
       - name: 🗄️ Migrations
         run: |
-          cd /var/www/shop/Agri---Sho/docker
+          cd /var/www/shop/docker
           docker compose exec -T app php artisan migrate --force
 
       - name: ⚡ Caches production
         run: |
-          cd /var/www/shop/Agri---Sho/docker
+          cd /var/www/shop/docker
           docker compose exec -T app php artisan config:cache
           docker compose exec -T app php artisan route:cache
           docker compose exec -T app php artisan view:cache
@@ -39,7 +39,7 @@ jobs:
 
       - name: 🔁 Queue restart
         run: |
-          cd /var/www/shop/Agri---Sho/docker
+          cd /var/www/shop/docker
           docker compose exec -T app php artisan queue:restart
 
       - name: 🧹 Nettoyage Docker
