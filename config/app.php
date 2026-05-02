@@ -54,7 +54,8 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url'         => env('APP_URL', 'http://localhost'),
+    'root_domain' => env('ROOT_DOMAIN', 'monghetto.com'),
 
     'asset_url' => env('ASSET_URL'),
 

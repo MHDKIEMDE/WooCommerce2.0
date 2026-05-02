@@ -53,6 +53,11 @@ class User extends Authenticatable
         return $this->role === 'buyer';
     }
 
+    public function shop()
+    {
+        return $this->hasOne(Shop::class);
+    }
+
     public function deviceTokens()
     {
         return $this->hasMany(DeviceToken::class);

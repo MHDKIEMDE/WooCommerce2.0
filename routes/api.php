@@ -26,6 +26,11 @@ Route::prefix('v1')->group(function () {
         });
     });
 
+    // ── Templates & Boutiques (public) ───────────────────────────────────
+    Route::get('templates',                        [\App\Http\Controllers\Api\V1\ShopController::class, 'templates']);
+    Route::get('templates/{slug}/palettes',        [\App\Http\Controllers\Api\V1\ShopController::class, 'palettes']);
+    Route::get('shops/{slug}',                     [\App\Http\Controllers\Api\V1\ShopController::class, 'show']);
+
     // ── Catalogue (public) ────────────────────────────────────────────────
     Route::get('products',                         [\App\Http\Controllers\Api\V1\ProductController::class, 'index']);
     Route::get('products/{slug}',                  [\App\Http\Controllers\Api\V1\ProductController::class, 'show']);
@@ -77,6 +82,13 @@ Route::prefix('v1')->group(function () {
             Route::patch('addresses/{id}/default', [\App\Http\Controllers\Api\V1\AddressController::class, 'setDefault']);
         });
 
+        // Boutique vendeur
+        Route::post('shops',                               [\App\Http\Controllers\Api\V1\ShopController::class, 'store']);
+        Route::middleware('shop.owner')->group(function () {
+            Route::patch('shops/{slug}/appearance',        [\App\Http\Controllers\Api\V1\Seller\ShopAppearanceController::class, 'update']);
+            Route::patch('shops/{slug}/sections',          [\App\Http\Controllers\Api\V1\Seller\ShopAppearanceController::class, 'updateSections']);
+        });
+
         // Wishlist
         Route::get('wishlist',                     [\App\Http\Controllers\Api\V1\WishlistController::class, 'index']);
         Route::post('wishlist',                    [\App\Http\Controllers\Api\V1\WishlistController::class, 'store']);
@@ -125,6 +137,11 @@ Route::prefix('v1')->group(function () {
         // Paramètres
         Route::get('settings',                     [\App\Http\Controllers\Api\V1\Admin\SettingController::class, 'index']);
         Route::patch('settings',                   [\App\Http\Controllers\Api\V1\Admin\SettingController::class, 'update']);
+
+        // Boutiques — validation admin
+        Route::get('shops',                                [\App\Http\Controllers\Api\V1\Admin\ShopController::class, 'index']);
+        Route::patch('shops/{id}/approve',                 [\App\Http\Controllers\Api\V1\Admin\ShopController::class, 'approve']);
+        Route::patch('shops/{id}/suspend',                 [\App\Http\Controllers\Api\V1\Admin\ShopController::class, 'suspend']);
 
         // Rapports
         Route::get('reports/sales',                [\App\Http\Controllers\Api\V1\Admin\ReportController::class, 'sales']);
