@@ -240,3 +240,105 @@ POST /api/v1/auth/reset-password    → { reset_token, password, password_confir
 ### Notifications push
 - Envoyer le FCM token à l'API au login/register via le champ `fcm_token`
 - Le serveur gère automatiquement la mise à jour du token en base
+
+---
+
+## 9. Stripe Connect — Marketplace
+
+Les vendeurs connectent leur compte Stripe pour recevoir les paiements directement.
+
+### Configurer Stripe Connect
+
+1. Activer Stripe Connect dans le dashboard Stripe → Connect → Settings
+2. Ajouter les variables d'environnement :
+
+```env
+STRIPE_KEY=pk_live_...
+STRIPE_SECRET=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+3. Configurer les webhooks Stripe (dashboard → Webhooks) pour pointer vers :
+   `https://shop.monghetto.com/api/v1/checkout/webhook`
+
+   Événements à écouter :
+   - `payment_intent.succeeded`
+   - `payment_intent.payment_failed`
+   - `account.updated` (pour les comptes Connect vendeurs)
+
+### Flux d'onboarding vendeur
+
+```
+POST /api/v1/seller/stripe/connect
+→ { "onboarding_url": "https://connect.stripe.com/setup/..." }
+```
+
+Le vendeur complète son profil Stripe sur la page Stripe fournie, puis est redirigé vers l'app.
+
+```
+GET /api/v1/seller/stripe/status
+→ { "connected": true, "charges_enabled": true, "account_id": "acct_xxx" }
+```
+
+### Commission plateforme
+
+La commission est configurée par boutique (`commission_rate` dans la table `shops`, défaut 5%).  
+Elle est déduite automatiquement lors de chaque paiement via Stripe `application_fee_amount`.
+
+---
+
+## 10. Docker (production)
+
+```bash
+cd docker/
+docker compose build
+docker compose up -d
+docker compose exec app php artisan migrate --force
+docker compose exec app php artisan db:seed --force
+docker compose exec app php artisan storage:link
+```
+
+Voir `docker/docker-compose.yml` pour la configuration des services (app, nginx, redis, mysql).
+
+---
+
+## 11. Sous-domaines boutiques (Wildcard DNS)
+
+Chaque boutique a un sous-domaine : `{subdomain}.monghetto.com`
+
+### DNS
+Ajouter un enregistrement wildcard :
+```
+*.monghetto.com  →  A  →  <IP serveur>
+```
+
+### Nginx — Virtual host wildcard
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name *.monghetto.com;
+
+    ssl_certificate     /etc/letsencrypt/live/monghetto.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/monghetto.com/privkey.pem;
+
+    root /var/www/shop/public;
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+}
+```
+
+### Certificat wildcard (Let's Encrypt)
+```bash
+certbot certonly --dns-cloudflare \
+  -d monghetto.com -d "*.monghetto.com" \
+  --email admin@monghetto.com --agree-tos
+```
