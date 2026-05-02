@@ -64,7 +64,7 @@
             {{-- Boutons --}}
             <div class="d-flex gap-1">
                 @if($product->stock_quantity > 0)
-                <form method="POST" action="{{ route('cart.add') }}">
+                <form method="POST" action="{{ route('cart.add') }}" data-ajax-cart>
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <input type="hidden" name="quantity" value="1">

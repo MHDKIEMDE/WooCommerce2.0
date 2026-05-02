@@ -223,7 +223,7 @@
                         @endif
 
                         {{-- Formulaire ajout au panier --}}
-                        <form action="{{ route('cart.add') }}" method="POST">
+                        <form action="{{ route('cart.add') }}" method="POST" data-ajax-cart id="form-add-to-cart">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
 
@@ -265,7 +265,7 @@
                                     </button>
                                 </div>
 
-                                <button type="submit"
+                                <button type="submit" id="btn-add-to-cart"
                                         class="btn btn-primary rounded-pill px-4 py-2 fw-semibold"
                                         {{ $product->stock_quantity <= 0 ? 'disabled' : '' }}>
                                     <i class="fa fa-shopping-bag me-2"></i>

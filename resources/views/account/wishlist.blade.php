@@ -123,7 +123,7 @@
                                     </div>
                                     <div class="d-flex gap-2">
                                         @if($product->stock_quantity > 0)
-                                        <form action="{{ route('cart.add') }}" method="POST" class="flex-grow-1">
+                                        <form action="{{ route('cart.add') }}" method="POST" class="flex-grow-1" data-ajax-cart>
                                             @csrf
                                             <input type="hidden" name="product_id" value="{{ $product->id }}">
                                             <button type="submit" class="btn btn-primary w-100 btn-sm">

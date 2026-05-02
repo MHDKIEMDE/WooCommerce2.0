@@ -442,6 +442,13 @@
         if (!form.matches('form[data-ajax-cart]')) return;
         e.preventDefault();
 
+        const btn = form.querySelector('[type="submit"]');
+        const origHTML = btn ? btn.innerHTML : null;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
+        }
+
         fetch(form.action, {
             method: 'POST',
             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -449,9 +456,24 @@
         })
         .then(r => r.json())
         .then(data => {
-            if (data.success) updateCartBadge(data.count);
+            if (data.success) {
+                updateCartBadge(data.count);
+                if (btn) {
+                    btn.innerHTML = '<i class="fa fa-check me-1"></i> Ajouté !';
+                    btn.classList.replace('btn-primary', 'btn-success');
+                    setTimeout(() => {
+                        btn.innerHTML = origHTML;
+                        btn.classList.replace('btn-success', 'btn-primary');
+                        btn.disabled = false;
+                    }, 1800);
+                }
+            } else {
+                if (btn) { btn.innerHTML = origHTML; btn.disabled = false; }
+            }
         })
-        .catch(() => {});
+        .catch(() => {
+            if (btn) { btn.innerHTML = origHTML; btn.disabled = false; }
+        });
     });
     </script>
 

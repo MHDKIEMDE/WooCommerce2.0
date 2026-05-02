@@ -336,7 +336,7 @@
                                 <h5 class="mb-2 text-dark">{{ number_format($bp->price, 0, ',', ' ') }} FCFA
                                     @if($bp->unit)<small class="text-muted fs-6">/ {{ $bp->unit }}</small>@endif
                                 </h5>
-                                <form action="{{ route('cart.add') }}" method="POST">
+                                <form action="{{ route('cart.add') }}" method="POST" data-ajax-cart>
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $bp->id }}">
                                     <input type="hidden" name="quantity" value="1">
