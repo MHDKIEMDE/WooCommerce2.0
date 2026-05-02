@@ -13,8 +13,18 @@ class ShopSeeder extends Seeder
 {
     public function run(): void
     {
-        $template = ShopTemplate::first();
-        $palette  = ShopPalette::first();
+        $foodTemplate = ShopTemplate::where('slug', 'food')->first();
+
+        // Map palette name → palette model (within the food template)
+        $palettes = $foodTemplate
+            ? $foodTemplate->palettes->keyBy('name')
+            : collect();
+
+        $vert    = $palettes->get('Vert Marché')   ?? ShopPalette::first();
+        $bleu    = $palettes->get('Bleu Marin')    ?? ShopPalette::first();
+        $terre   = $palettes->get('Terre & Épices')  ?? ShopPalette::first();
+        $olive   = $palettes->get('Olive Gourmet') ?? ShopPalette::first();
+        $rouge   = $palettes->get('Rouge Saveur')  ?? ShopPalette::first();
 
         $shops = [
             [
@@ -24,6 +34,7 @@ class ShopSeeder extends Seeder
                 'subdomain'   => 'biofarm',
                 'description' => 'Produits biologiques directs des fermes ivoiriennes.',
                 'status'      => 'active',
+                'palette'     => $vert,
             ],
             [
                 'email'       => 'vendeur2@example.com',
@@ -32,6 +43,7 @@ class ShopSeeder extends Seeder
                 'subdomain'   => 'poissonfrais',
                 'description' => 'Poissons et fruits de mer pêchés chaque matin.',
                 'status'      => 'active',
+                'palette'     => $bleu,
             ],
             [
                 'email'       => 'vendeur3@example.com',
@@ -40,6 +52,7 @@ class ShopSeeder extends Seeder
                 'subdomain'   => 'epicerie',
                 'description' => 'Épices, condiments et produits locaux.',
                 'status'      => 'active',
+                'palette'     => $terre,
             ],
             [
                 'email'       => 'vendeur4@example.com',
@@ -48,6 +61,7 @@ class ShopSeeder extends Seeder
                 'subdomain'   => 'laiterie',
                 'description' => 'Lait frais, fromages et yaourts artisanaux du nord.',
                 'status'      => 'pending',
+                'palette'     => $olive,
             ],
             [
                 'email'       => 'vendeur5@example.com',
@@ -56,6 +70,7 @@ class ShopSeeder extends Seeder
                 'subdomain'   => 'cereales',
                 'description' => 'Riz, mil, maïs et farines locales.',
                 'status'      => 'active',
+                'palette'     => $rouge,
             ],
         ];
 
@@ -69,8 +84,8 @@ class ShopSeeder extends Seeder
                 ['slug' => $data['slug']],
                 [
                     'user_id'         => $user->id,
-                    'template_id'     => $template?->id,
-                    'palette_id'      => $palette?->id,
+                    'template_id'     => $foodTemplate?->id,
+                    'palette_id'      => $data['palette']?->id,
                     'name'            => $data['name'],
                     'subdomain'       => $data['subdomain'],
                     'description'     => $data['description'],
