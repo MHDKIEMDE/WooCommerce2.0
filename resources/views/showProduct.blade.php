@@ -37,6 +37,16 @@
     <h1 class="text-center text-white display-6">{{ $product->name }}</h1>
     <ol class="breadcrumb justify-content-center mb-0">
         <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-white">Accueil</a></li>
+        @if($product->shop)
+        <li class="breadcrumb-item">
+            <a href="{{ route('marketplace.index') }}" class="text-white">Boutiques</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{{ route('marketplace.show', $product->shop->slug) }}" class="text-white">
+                {{ $product->shop->name }}
+            </a>
+        </li>
+        @else
         <li class="breadcrumb-item"><a href="{{ route('shop.index') }}" class="text-white">Boutique</a></li>
         @if($product->category)
         <li class="breadcrumb-item">
@@ -44,6 +54,7 @@
                 {{ $product->category->name }}
             </a>
         </li>
+        @endif
         @endif
         <li class="breadcrumb-item active text-white">{{ Str::limit($product->name, 28) }}</li>
     </ol>
@@ -287,6 +298,38 @@
                             </div>
                         </div>
 
+                        {{-- Encadré vendeur --}}
+                        @if($product->shop)
+                        <div class="border rounded-3 p-3 mt-4 d-flex align-items-center gap-3">
+                            {{-- Avatar boutique --}}
+                            @if($product->shop->logo)
+                            <img src="{{ Storage::url($product->shop->logo) }}" alt="{{ $product->shop->name }}"
+                                class="rounded-circle flex-shrink-0"
+                                style="width:52px;height:52px;object-fit:cover;">
+                            @else
+                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0"
+                                style="width:52px;height:52px;">
+                                <span class="text-white fw-bold fs-5">{{ strtoupper(substr($product->shop->name, 0, 1)) }}</span>
+                            </div>
+                            @endif
+
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="small text-muted">Vendu par</div>
+                                <div class="fw-bold text-truncate">{{ $product->shop->name }}</div>
+                                @if($product->shop->template)
+                                <span class="badge bg-primary-subtle text-primary" style="font-size:.65rem;">
+                                    {{ $product->shop->template->name }}
+                                </span>
+                                @endif
+                            </div>
+
+                            <a href="{{ route('marketplace.show', $product->shop->slug) }}"
+                               class="btn btn-outline-primary btn-sm flex-shrink-0">
+                                <i class="fas fa-store me-1"></i> Voir la boutique
+                            </a>
+                        </div>
+                        @endif
+
                     </div>
                 </div>
 
@@ -500,12 +543,40 @@
 
         </div>
 
+        {{-- ── Autres produits de la même boutique ──────────────────────── --}}
+        @if($product->shop && $shopProducts->isNotEmpty())
+        <div class="mt-5 pt-3">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h3 class="fw-bold mb-0">
+                        <i class="fas fa-store me-2 text-primary"></i>
+                        Autres produits de {{ $product->shop->name }}
+                    </h3>
+                    <small class="text-muted">Du même vendeur</small>
+                </div>
+                <a href="{{ route('marketplace.show', $product->shop->slug) }}"
+                   class="btn btn-outline-primary btn-sm rounded-pill px-4">
+                    Voir la boutique <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="row g-4">
+                @foreach($shopProducts as $sp)
+                <div class="col-md-6 col-lg-3">
+                    @include('components.product-card', ['product' => $sp])
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         {{-- ── Produits similaires ─────────────────────────────────────── --}}
         @if($related->isNotEmpty())
         <div class="mt-5 pt-3">
             <div class="d-flex align-items-center justify-content-between mb-4">
-                <h3 class="fw-bold mb-0">Produits similaires</h3>
-                @if($product->category)
+                <h3 class="fw-bold mb-0">
+                    {{ $product->shop ? 'Vous aimerez aussi' : 'Produits similaires' }}
+                </h3>
+                @if($product->category && !$product->shop)
                 <a href="{{ route('shop.index', ['category' => $product->category->slug]) }}"
                    class="btn btn-outline-primary btn-sm rounded-pill px-4">
                     Voir tout <i class="fas fa-arrow-right ms-1"></i>

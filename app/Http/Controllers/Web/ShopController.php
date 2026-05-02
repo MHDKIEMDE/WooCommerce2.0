@@ -127,7 +127,7 @@ class ShopController extends Controller
     public function show(string $slug)
     {
         $product = Cache::remember("web:product:{$slug}", now()->addMinutes(10), function () use ($slug) {
-            return Product::with(['category', 'brand', 'images', 'attributes', 'variants', 'reviews'])
+            return Product::with(['category', 'brand', 'images', 'attributes', 'variants', 'reviews', 'shop.owner'])
                 ->where('slug', $slug)
                 ->where('status', 'active')
                 ->firstOrFail();
@@ -142,16 +142,39 @@ class ShopController extends Controller
             Cache::forget('web:home:bestsellers');
         }
 
+        // Autres produits de la même boutique (si ce produit appartient à un vendeur)
+        $shopProducts = collect();
+        if ($product->shop_id) {
+            $shopProducts = Product::with('images')
+                ->where('shop_id', $product->shop_id)
+                ->where('status', 'active')
+                ->where('id', '!=', $product->id)
+                ->latest()
+                ->take(4)
+                ->get();
+        }
+
         $related = Cache::remember("web:related:{$slug}", now()->addMinutes(10), function () use ($product) {
+            // Priorité : même boutique, puis même catégorie
             $items = Product::with(['images'])
                 ->where('status', 'active')
-                ->where('category_id', $product->category_id)
                 ->where('id', '!=', $product->id)
+                ->when($product->shop_id, fn ($q) => $q->where('shop_id', $product->shop_id))
                 ->take(8)
                 ->get();
 
-            // Si pas assez de produits dans la catégorie, compléter avec d'autres produits
-            if ($items->count() < 6) {
+            if ($items->count() < 4) {
+                $extra = Product::with(['images'])
+                    ->where('status', 'active')
+                    ->where('id', '!=', $product->id)
+                    ->where('category_id', $product->category_id)
+                    ->whereNotIn('id', $items->pluck('id'))
+                    ->take(8 - $items->count())
+                    ->get();
+                $items = $items->concat($extra);
+            }
+
+            if ($items->count() < 4) {
                 $extra = Product::with(['images'])
                     ->where('status', 'active')
                     ->where('id', '!=', $product->id)
@@ -165,7 +188,7 @@ class ShopController extends Controller
             return $items;
         });
 
-        return view('showProduct', compact('product', 'related'));
+        return view('showProduct', compact('product', 'related', 'shopProducts'));
     }
 
     public function category(string $slug, Request $request)
