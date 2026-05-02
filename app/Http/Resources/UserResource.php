@@ -16,6 +16,7 @@ class UserResource extends JsonResource
             'email'             => $this->email,
             'phone'             => $this->phone,
             'role'              => $this->role,
+            'is_active'         => $this->is_active,
             'avatar'            => $this->avatar ? Storage::url($this->avatar) : null,
             'email_verified_at' => $this->email_verified_at?->toIso8601String(),
             'last_login_at'     => $this->last_login_at?->toIso8601String(),

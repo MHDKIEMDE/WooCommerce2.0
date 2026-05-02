@@ -41,7 +41,7 @@ class UserController extends Controller
         $data = $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => ['required','email', Rule::unique('users','email')->ignore($user->id)],
-            'role'     => 'required|in:customer,admin,super-admin',
+            'role'     => 'required|in:buyer,seller,admin',
             'is_active'=> 'boolean',
             'password' => 'nullable|string|min:8|confirmed',
         ]);

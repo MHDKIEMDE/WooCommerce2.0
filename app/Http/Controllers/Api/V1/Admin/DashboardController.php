@@ -29,9 +29,9 @@ class DashboardController extends BaseApiController
                 'total'      => Order::count(),
             ],
             'customers' => [
-                'new_today'  => User::where('role', 'customer')->whereDate('created_at', $today)->count(),
-                'this_month' => User::where('role', 'customer')->where('created_at', '>=', $thisMonth)->count(),
-                'total'      => User::where('role', 'customer')->count(),
+                'new_today'  => User::where('role', 'buyer')->whereDate('created_at', $today)->count(),
+                'this_month' => User::where('role', 'buyer')->where('created_at', '>=', $thisMonth)->count(),
+                'total'      => User::where('role', 'buyer')->count(),
             ],
             'products' => [
                 'total'       => Product::count(),

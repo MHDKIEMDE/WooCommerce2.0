@@ -59,7 +59,7 @@ class AuthController extends Controller
             'email'     => $data['email'],
             'password'  => $data['password'],
             'phone'     => $data['phone'] ?? null,
-            'role'      => 'customer',
+            'role'      => 'buyer',
             'is_active' => true,
         ]);
 

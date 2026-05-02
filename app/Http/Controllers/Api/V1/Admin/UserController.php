@@ -12,7 +12,8 @@ class UserController extends BaseApiController
 {
     public function index(Request $request): JsonResponse
     {
-        $query = User::where('role', 'customer')->withCount('orders')->latest();
+        $role  = $request->input('role', 'buyer');
+        $query = User::where('role', $role)->withCount('orders')->latest();
 
         if ($request->filled('search')) {
             $s = $request->search;

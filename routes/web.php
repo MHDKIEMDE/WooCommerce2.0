@@ -91,7 +91,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // ── Dashboard Admin — Carrousel Slides ───────────────────────────────────
-Route::middleware(['auth', 'role:admin,super-admin'])->prefix('dashboard')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('dashboard')->name('admin.')->group(function () {
     Route::get('/',             [DashboardController::class, 'index'])->name('dashboard');
     Route::get('users',                   [AdminUserController::class, 'index'])->name('users.index');
     Route::get('users/{user}/edit',       [AdminUserController::class, 'edit'])->name('users.edit');

@@ -83,7 +83,7 @@ class ReportController extends BaseApiController
         $from = $request->input('from', now()->subDays(30)->toDateString());
         $to   = $request->input('to', now()->toDateString());
 
-        $newCustomers = User::where('role', 'customer')
+        $newCustomers = User::where('role', 'buyer')
             ->whereDate('created_at', '>=', $from)
             ->whereDate('created_at', '<=', $to)
             ->selectRaw("DATE_FORMAT(created_at, '%Y-%m-%d') as date, COUNT(*) as count")
@@ -91,7 +91,7 @@ class ReportController extends BaseApiController
             ->orderBy('date')
             ->get();
 
-        $topSpenders = User::where('role', 'customer')
+        $topSpenders = User::where('role', 'buyer')
             ->withSum(['orders as total_spent' => fn ($q) => $q->where('payment_status', 'paid')], 'total')
             ->withCount('orders')
             ->having('total_spent', '>', 0)

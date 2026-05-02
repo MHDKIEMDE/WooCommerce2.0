@@ -40,7 +40,17 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return in_array($this->role, ['admin', 'super-admin']);
+        return $this->role === 'admin';
+    }
+
+    public function isSeller(): bool
+    {
+        return $this->role === 'seller';
+    }
+
+    public function isBuyer(): bool
+    {
+        return $this->role === 'buyer';
     }
 
     public function deviceTokens()

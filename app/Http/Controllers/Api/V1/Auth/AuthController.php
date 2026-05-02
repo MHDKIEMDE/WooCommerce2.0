@@ -21,12 +21,14 @@ class AuthController extends BaseApiController
 {
     public function register(RegisterRequest $request): JsonResponse
     {
+        $role = $request->input('role', 'buyer');
+
         $user = User::create([
             'name'      => $request->name,
             'email'     => $request->email,
             'password'  => $request->password,
             'phone'     => $request->phone,
-            'role'      => 'customer',
+            'role'      => $role,
             'is_active' => true,
         ]);
 
@@ -36,10 +38,14 @@ class AuthController extends BaseApiController
 
         $user->notify(new WelcomeNotification());
 
+        $message = $role === 'seller'
+            ? 'Compte vendeur créé. Créez votre boutique pour commencer à vendre.'
+            : 'Compte créé avec succès.';
+
         return $this->success([
             'user'  => new UserResource($user),
             'token' => $token,
-        ], 'Compte créé avec succès.', 201);
+        ], $message, 201);
     }
 
     public function login(LoginRequest $request): JsonResponse
@@ -54,7 +60,14 @@ class AuthController extends BaseApiController
             return $this->error('Votre compte est désactivé.', 403);
         }
 
+        // Révoquer le token du même device s'il existe
         $user->tokens()->where('name', $request->device_name)->delete();
+
+        // Limite : 3 appareils max — révoquer le plus ancien si dépassé
+        $activeTokens = $user->tokens()->orderBy('created_at')->get();
+        if ($activeTokens->count() >= 3) {
+            $activeTokens->first()->delete();
+        }
 
         $token = $user->createToken($request->device_name)->plainTextToken;
 
