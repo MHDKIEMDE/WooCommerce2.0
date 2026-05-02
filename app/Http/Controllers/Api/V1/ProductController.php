@@ -16,8 +16,9 @@ class ProductController extends BaseApiController
 
         $paginator = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($request) {
             $query = Product::query()
-                ->with(['category', 'brand', 'images'])
-                ->where('status', 'active');
+                ->with(['category:id,name,slug', 'brand:id,name,slug', 'images', 'shop:id,name,slug,template_id', 'shop.template:id,name,slug,icon'])
+                ->where('status', 'active')
+                ->whereHas('shop', fn ($q) => $q->where('status', 'active'));
 
             if ($request->filled('category')) {
                 $query->whereHas('category', fn ($q) => $q->where('slug', $request->category));
@@ -27,32 +28,43 @@ class ProductController extends BaseApiController
                 $query->whereHas('brand', fn ($q) => $q->where('slug', $request->brand));
             }
 
+            // Filtre par boutique (slug)
+            if ($request->filled('shop')) {
+                $query->whereHas('shop', fn ($q) => $q->where('slug', $request->shop));
+            }
+
+            // Filtre par niche / template (slug : food, mode, digital…)
+            if ($request->filled('niche')) {
+                $query->whereHas('shop.template', fn ($q) => $q->where('slug', $request->niche));
+            }
+
             if ($request->boolean('featured')) {
                 $query->where('featured', true);
             }
 
             if ($request->filled('min_price')) {
-                $query->where('price', '>=', $request->min_price);
+                $query->where('price', '>=', (float) $request->min_price);
             }
 
             if ($request->filled('max_price')) {
-                $query->where('price', '<=', $request->max_price);
+                $query->where('price', '<=', (float) $request->max_price);
+            }
+
+            if ($request->filled('min_rating')) {
+                $query->where('rating_avg', '>=', (float) $request->min_rating);
             }
 
             if ($request->boolean('in_stock')) {
                 $query->where('stock_quantity', '>', 0);
             }
 
-            $sortField     = 'created_at';
-            $sortDirection = 'desc';
-
-            match ($request->input('sort')) {
-                'price_asc'  => [$sortField, $sortDirection] = ['price', 'asc'],
-                'price_desc' => [$sortField, $sortDirection] = ['price', 'desc'],
-                'name_asc'   => [$sortField, $sortDirection] = ['name', 'asc'],
-                'popular'    => [$sortField, $sortDirection] = ['rating_count', 'desc'],
-                'top_rated'  => [$sortField, $sortDirection] = ['rating_avg', 'desc'],
-                default      => null,
+            [$sortField, $sortDirection] = match ($request->input('sort')) {
+                'price_asc'  => ['price', 'asc'],
+                'price_desc' => ['price', 'desc'],
+                'name_asc'   => ['name', 'asc'],
+                'popular'    => ['rating_count', 'desc'],
+                'top_rated'  => ['rating_avg', 'desc'],
+                default      => ['created_at', 'desc'],
             };
 
             return $query->orderBy($sortField, $sortDirection)
@@ -77,7 +89,7 @@ class ProductController extends BaseApiController
         $cacheKey = "product:{$slug}";
 
         $product = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($slug) {
-            return Product::with(['category', 'brand', 'images', 'attributes', 'variants'])
+            return Product::with(['category', 'brand', 'images', 'attributes', 'variants', 'shop:id,name,slug,template_id', 'shop.template:id,name,slug,icon'])
                 ->where('slug', $slug)
                 ->where('status', 'active')
                 ->firstOrFail();

@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Product;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class ProductObserver
@@ -17,6 +18,18 @@ class ProductObserver
         if ($product->isDirty('name') && empty($product->slug)) {
             $product->slug = $this->uniqueSlug($product->name, $product->id);
         }
+    }
+
+    public function saved(Product $product): void
+    {
+        Cache::forget("product:{$product->slug}");
+        Cache::forget('marketplace:home');
+    }
+
+    public function deleted(Product $product): void
+    {
+        Cache::forget("product:{$product->slug}");
+        Cache::forget('marketplace:home');
     }
 
     private function uniqueSlug(string $name, ?int $excludeId = null): string

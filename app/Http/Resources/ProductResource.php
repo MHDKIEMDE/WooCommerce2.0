@@ -39,6 +39,12 @@ class ProductResource extends JsonResource
             'rating_avg'        => $this->rating_avg,
             'rating_count'      => $this->rating_count,
             'primary_image'     => $primaryImage,
+            'shop'              => $this->whenLoaded('shop', fn () => $this->shop ? [
+                'id'     => $this->shop->id,
+                'name'   => $this->shop->name,
+                'slug'   => $this->shop->slug,
+                'niche'  => $this->shop->relationLoaded('template') ? $this->shop->template?->slug : null,
+            ] : null),
             'category'          => new CategoryResource($this->whenLoaded('category')),
             'brand'             => new BrandResource($this->whenLoaded('brand')),
             'images'            => ProductImageResource::collection($this->whenLoaded('images')),

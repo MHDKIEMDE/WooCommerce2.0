@@ -26,6 +26,11 @@ Route::prefix('v1')->group(function () {
         });
     });
 
+    // ── Marketplace (public) ─────────────────────────────────────────────
+    Route::get('marketplace',              [\App\Http\Controllers\Api\V1\MarketplaceController::class, 'home']);
+    Route::get('marketplace/shops',        [\App\Http\Controllers\Api\V1\MarketplaceController::class, 'shops']);
+    Route::get('marketplace/niches',       [\App\Http\Controllers\Api\V1\MarketplaceController::class, 'niches']);
+
     // ── Templates & Boutiques (public) ───────────────────────────────────
     Route::get('templates',                        [\App\Http\Controllers\Api\V1\ShopController::class, 'templates']);
     Route::get('templates/{slug}/palettes',        [\App\Http\Controllers\Api\V1\ShopController::class, 'palettes']);
