@@ -157,6 +157,16 @@
                             <i class="fas fa-truck"></i> Zones de livraison
                         </a>
 
+                        <div class="sb-sidenav-menu-heading">Marketplace</div>
+                        <a class="nav-link {{ request()->routeIs('admin.shops.*') ? 'active' : '' }}"
+                           href="{{ route('admin.shops.index') }}">
+                            <i class="fas fa-store-alt"></i> Boutiques vendeurs
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('admin.templates.*') ? 'active' : '' }}"
+                           href="{{ route('admin.templates.index') }}">
+                            <i class="fas fa-layer-group"></i> Niches / Templates
+                        </a>
+
                         <div class="sb-sidenav-menu-heading">Utilisateurs</div>
                         <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
                            href="{{ route('admin.users.index') }}">

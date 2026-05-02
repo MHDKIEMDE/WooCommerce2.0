@@ -23,6 +23,7 @@ use App\Http\Controllers\Web\Admin\StockController as AdminStockController;
 use App\Http\Controllers\Web\Admin\DeliveryZoneController;
 use App\Http\Controllers\Web\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Web\Admin\ShopController as AdminShopController;
+use App\Http\Controllers\Web\Admin\ShopTemplateController;
 use App\Http\Controllers\Web\MarketplaceController;
 use App\Http\Controllers\Web\SellerOnboardingController;
 use Illuminate\Support\Facades\Route;
@@ -139,6 +140,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('dashboard')->name('admin.')->
     Route::get('theme-settings', [ThemeSettingsController::class, 'edit'])->name('theme-settings.edit');
     Route::put('theme-settings', [ThemeSettingsController::class, 'update'])->name('theme-settings.update');
     Route::resource('delivery-zones', DeliveryZoneController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('templates', ShopTemplateController::class)->except(['show']);
+    Route::post('templates/{template}/palettes',              [ShopTemplateController::class, 'storePalette'])->name('templates.palettes.store');
+    Route::delete('templates/{template}/palettes/{palette}',  [ShopTemplateController::class, 'destroyPalette'])->name('templates.palettes.destroy');
     Route::get('shops',                    [AdminShopController::class, 'index'])->name('shops.index');
     Route::patch('shops/{shop}/approve',   [AdminShopController::class, 'approve'])->name('shops.approve');
     Route::patch('shops/{shop}/suspend',   [AdminShopController::class, 'suspend'])->name('shops.suspend');
