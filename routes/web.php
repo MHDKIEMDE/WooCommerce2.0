@@ -85,6 +85,7 @@ Route::view('/contact', 'contact')->name('contact');
 Route::view('/about', 'about')->name('about');
 Route::get('/checkout',  [CheckoutController::class, 'show'])->name('checkout.show');
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::post('/checkout/stripe/intent', [CheckoutController::class, 'createStripeIntent'])->name('checkout.stripe.intent')->middleware('auth');
 Route::get('/checkout/confirmation/{orderNumber}', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
 Route::get('/testimonial', [TestimonialController::class, 'index'])->name('testimonial.index');
 

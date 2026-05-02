@@ -164,6 +164,29 @@
                                 Votre commande sera expédiée après réception du paiement.
                             </p>
                         </div>
+
+                        @if(config('services.stripe.key'))
+                        <div class="border rounded p-3 mb-2" id="stripe-option-wrapper">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method"
+                                    id="stripe_card" value="stripe"
+                                    {{ old('payment_method') === 'stripe' ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold" for="stripe_card">
+                                    <i class="fab fa-cc-stripe me-2 text-primary"></i>
+                                    Carte bancaire (Stripe)
+                                </label>
+                            </div>
+                            <p class="text-muted small ms-4 mb-0 mt-1">Visa, Mastercard — paiement 100 % sécurisé.</p>
+
+                            {{-- Formulaire Stripe Elements (caché sauf si stripe sélectionné) --}}
+                            <div id="stripe-elements-wrapper" class="mt-3 ms-4" style="display:none;">
+                                <div id="stripe-card-element" class="form-control py-3"></div>
+                                <div id="stripe-card-errors" class="text-danger small mt-2" role="alert"></div>
+                                <input type="hidden" name="stripe_payment_intent_id" id="stripe_payment_intent_id">
+                            </div>
+                        </div>
+                        @endif
+
                         @error('payment_method')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
@@ -403,4 +426,103 @@ function formatFCFA(n) {
     return Math.round(n).toLocaleString('fr-FR');
 }
 </script>
+
+@if(config('services.stripe.key'))
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+(function () {
+    const STRIPE_KEY  = @json(config('services.stripe.key'));
+    const INTENT_URL  = '{{ route('checkout.stripe.intent') }}';
+    const CSRF        = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+    if (!STRIPE_KEY) return;
+
+    const stripe      = Stripe(STRIPE_KEY);
+    const elements    = stripe.elements();
+    const cardElement = elements.create('card', {
+        style: { base: { fontSize: '16px', color: '#212529', fontFamily: 'inherit' } }
+    });
+
+    const wrapper     = document.getElementById('stripe-elements-wrapper');
+    const radioStripe = document.getElementById('stripe_card');
+    const errorBox    = document.getElementById('stripe-card-errors');
+    let   cardMounted = false;
+
+    function mountCard() {
+        if (!cardMounted) {
+            cardElement.mount('#stripe-card-element');
+            cardMounted = true;
+            cardElement.on('change', e => {
+                errorBox.textContent = e.error ? e.error.message : '';
+            });
+        }
+    }
+
+    // Show/hide on method change
+    document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.value === 'stripe') {
+                wrapper.style.display = '';
+                mountCard();
+            } else {
+                wrapper.style.display = 'none';
+            }
+        });
+    });
+
+    // Restore on page load (old() or direct selection)
+    if (radioStripe?.checked) {
+        wrapper.style.display = '';
+        mountCard();
+    }
+
+    // Intercept form submit when stripe is selected
+    const form = document.getElementById('checkout-form');
+    const intentInput = document.getElementById('stripe_payment_intent_id');
+
+    form.addEventListener('submit', async function (e) {
+        if (!radioStripe?.checked) return; // non-stripe methods pass through
+
+        e.preventDefault();
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Traitement…';
+
+        try {
+            // 1) Create PaymentIntent server-side
+            const res = await fetch(INTENT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                body: JSON.stringify({ total: parseFloat(document.getElementById('total-display')?.dataset.raw ?? 0) }),
+            });
+            const { client_secret, error: serverError } = await res.json();
+
+            if (serverError) throw new Error(serverError);
+
+            // 2) Confirm card payment client-side
+            const { paymentIntent, error } = await stripe.confirmCardPayment(client_secret, {
+                payment_method: { card: cardElement },
+            });
+
+            if (error) {
+                errorBox.textContent = error.message;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-lock me-2"></i> Confirmer la commande';
+                return;
+            }
+
+            // 3) Pass PaymentIntent ID to Laravel for verification
+            intentInput.value = paymentIntent.id;
+            form.submit();
+
+        } catch (err) {
+            errorBox.textContent = err.message ?? 'Une erreur est survenue.';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-lock me-2"></i> Confirmer la commande';
+        }
+    });
+})();
+</script>
+@endif
 @endsection

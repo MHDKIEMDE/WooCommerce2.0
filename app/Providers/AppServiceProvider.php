@@ -18,7 +18,9 @@ use App\Listeners\SendOrderNotification;
 use App\Listeners\SendPushNotification;
 use App\Listeners\SendShopNotification;
 use App\Models\Product;
+use App\Models\Review;
 use App\Observers\ProductObserver;
+use App\Observers\ReviewObserver;
 use App\Services\CartService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -39,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
 
         Product::observe(ProductObserver::class);
+        Review::observe(ReviewObserver::class);
 
         // Stock decrement on successful payment
         Event::listen(PaymentConfirmed::class, DecrementStockOnPayment::class);

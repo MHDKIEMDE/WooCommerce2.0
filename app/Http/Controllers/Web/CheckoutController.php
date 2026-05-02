@@ -8,9 +8,11 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\CartService;
 use App\Services\WhatsAppService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -20,6 +22,39 @@ class CheckoutController extends Controller
         private CartService     $cartService,
         private WhatsAppService $whatsApp,
     ) {}
+
+    /**
+     * Crée un PaymentIntent Stripe et retourne le client_secret au JS.
+     */
+    public function createStripeIntent(Request $request): JsonResponse
+    {
+        $cart = $this->cartService->getCart($request->user());
+
+        if ($cart['count'] === 0) {
+            return response()->json(['error' => 'Panier vide.'], 422);
+        }
+
+        if (! class_exists(\Stripe\StripeClient::class)) {
+            return response()->json(['error' => 'Stripe non installé.'], 500);
+        }
+
+        $totals  = $this->cartService->calculateTotals($cart['items'], $cart['coupon'], 0);
+        $amount  = (int) round($totals['total'] * 100); // centimes
+
+        try {
+            $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+            $intent = $stripe->paymentIntents->create([
+                'amount'   => max($amount, 50),
+                'currency' => 'xof',
+                'automatic_payment_methods' => ['enabled' => true],
+            ]);
+
+            return response()->json(['client_secret' => $intent->client_secret]);
+        } catch (\Throwable $e) {
+            Log::error('Stripe intent error: ' . $e->getMessage());
+            return response()->json(['error' => 'Impossible de contacter Stripe.'], 500);
+        }
+    }
 
     public function show(Request $request): View|RedirectResponse
     {
@@ -61,7 +96,8 @@ class CheckoutController extends Controller
             'city'           => 'required|string|max:100',
             'country'        => 'nullable|string|max:100',
             'postal_code'    => 'nullable|string|max:20',
-            'payment_method' => 'required|in:cash_on_delivery,bank_transfer',
+            'payment_method'              => 'required|in:cash_on_delivery,bank_transfer,stripe',
+            'stripe_payment_intent_id'    => 'required_if:payment_method,stripe|nullable|string',
             'notes'          => 'nullable|string|max:1000',
             'zone_id'        => $zones->isNotEmpty() ? 'required|exists:delivery_zones,id' : 'nullable',
         ]);
@@ -89,7 +125,27 @@ class CheckoutController extends Controller
             'postal_code' => $data['postal_code'] ?? '',
         ];
 
-        $order = DB::transaction(function () use ($data, $cart, $totals, $address, $request) {
+        // Vérifier le PaymentIntent Stripe avant de créer la commande
+        $stripeVerified = false;
+        if ($data['payment_method'] === 'stripe') {
+            $intentId = $data['stripe_payment_intent_id'] ?? null;
+            if (! $intentId || ! class_exists(\Stripe\StripeClient::class)) {
+                return back()->withErrors(['payment_method' => 'Paiement Stripe invalide.']);
+            }
+            try {
+                $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+                $intent = $stripe->paymentIntents->retrieve($intentId);
+                if ($intent->status !== 'succeeded') {
+                    return back()->withErrors(['payment_method' => 'Le paiement n\'a pas été confirmé.']);
+                }
+                $stripeVerified = true;
+            } catch (\Throwable $e) {
+                Log::error('Stripe verify error: ' . $e->getMessage());
+                return back()->withErrors(['payment_method' => 'Impossible de vérifier le paiement Stripe.']);
+            }
+        }
+
+        $order = DB::transaction(function () use ($data, $cart, $totals, $address, $request, $stripeVerified) {
             $order = Order::create([
                 'user_id'         => $request->user()?->id,
                 'order_number'    => 'CMD-' . strtoupper(Str::random(8)),
@@ -102,7 +158,7 @@ class CheckoutController extends Controller
                 'billing_address' => $address,
                 'shipping_address'=> $address,
                 'payment_method'  => $data['payment_method'],
-                'payment_status'  => 'pending',
+                'payment_status'  => $stripeVerified ? 'paid' : 'pending',
                 'coupon_id'       => $cart['coupon']?->id,
                 'notes'           => $data['notes'] ?? null,
             ]);
