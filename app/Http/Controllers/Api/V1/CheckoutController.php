@@ -6,6 +6,7 @@ use App\Events\PaymentConfirmed;
 use App\Http\Resources\OrderResource;
 use App\Models\Coupon;
 use App\Models\Order;
+use App\Models\Shop;
 use App\Services\CartService;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
@@ -32,9 +33,11 @@ class CheckoutController extends BaseApiController
             'success' => true,
             'message' => 'OK',
             'data'    => [
-                'items'   => \App\Http\Resources\CartResource::collection($cart['items']),
-                'totals'  => $cart['totals'],
-                'coupon'  => $cart['coupon']?->code,
+                'by_shop'    => $cart['by_shop'],
+                'items'      => \App\Http\Resources\CartResource::collection($cart['items']),
+                'totals'     => $cart['totals'],
+                'coupon'     => $cart['coupon']?->code,
+                'shop_count' => $cart['shop_count'],
             ],
         ]);
     }
@@ -65,33 +68,54 @@ class CheckoutController extends BaseApiController
 
         $billingAddress = $data['billing_address'] ?? $data['shipping_address'];
 
+        // Grouper les articles par boutique
+        $byShop = $items->groupBy(fn ($item) => $item->product?->shop_id ?? 0);
+
         try {
             DB::beginTransaction();
 
-            $order = $this->orderService->createFromCart(
-                $user,
-                $items,
-                $data['shipping_address'],
-                $billingAddress,
-                $coupon,
-                'stripe',
-                $data['notes'] ?? null,
-            );
+            $results = [];
 
-            // Créer le PaymentIntent Stripe
-            $paymentIntent = $this->createStripePaymentIntent($order);
+            foreach ($byShop as $shopId => $shopItems) {
+                $order = $this->orderService->createForShop(
+                    $user,
+                    (int) $shopId,
+                    $shopItems,
+                    $data['shipping_address'],
+                    $billingAddress,
+                    $coupon,
+                    'stripe',
+                    $data['notes'] ?? null,
+                );
 
-            $order->update(['payment_reference' => $paymentIntent['id']]);
+                $shop          = Shop::find($shopId);
+                $paymentIntent = $this->createStripePaymentIntent($order, $shop);
+
+                $order->update(['payment_reference' => $paymentIntent['id']]);
+
+                $results[] = [
+                    'order'         => new OrderResource($order->load('items')),
+                    'client_secret' => $paymentIntent['client_secret'],
+                    'shop'          => $shop ? ['name' => $shop->name, 'slug' => $shop->slug] : null,
+                ];
+            }
+
+            if ($coupon) {
+                app(\App\Services\CouponService::class)->incrementUsage($coupon);
+            }
 
             $this->cartService->clear($user);
 
             DB::commit();
 
             return $this->success([
-                'order'                => new OrderResource($order->load('items')),
-                'client_secret'        => $paymentIntent['client_secret'],
+                'orders'                 => $results,
                 'stripe_publishable_key' => config('services.stripe.key'),
-            ], 'Commande créée. Procédez au paiement.', 201);
+                'order_count'            => count($results),
+            ], count($results) > 1
+                ? count($results) . ' commandes créées (une par boutique). Procédez au paiement.'
+                : 'Commande créée. Procédez au paiement.',
+            201);
 
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -133,20 +157,36 @@ class CheckoutController extends BaseApiController
         return response()->json(['received' => true]);
     }
 
-    private function createStripePaymentIntent(Order $order): array
+    private function createStripePaymentIntent(Order $order, ?Shop $shop = null): array
     {
         if (! class_exists(\Stripe\StripeClient::class)) {
-            // Stripe non installé — retourner un stub pour le développement
-            return ['id' => 'pi_dev_' . $order->id, 'client_secret' => 'dev_secret'];
+            return ['id' => 'pi_dev_' . $order->id, 'client_secret' => 'dev_secret_' . $order->id];
         }
 
         $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
 
-        $intent = $stripe->paymentIntents->create([
-            'amount'   => (int) round($order->total * 100),
-            'currency' => 'eur',
-            'metadata' => ['order_id' => $order->id, 'order_number' => $order->order_number],
-        ]);
+        $params = [
+            'amount'               => (int) round($order->total * 100),
+            'currency'             => 'eur',
+            'automatic_payment_methods' => ['enabled' => true],
+            'metadata'             => [
+                'order_id'     => $order->id,
+                'order_number' => $order->order_number,
+                'shop_id'      => $shop?->id,
+            ],
+        ];
+
+        // Stripe Connect : paiement direct vers le compte vendeur
+        if ($shop?->stripe_account_id) {
+            $commissionRate          = (float) ($shop->commission_rate ?? 0);
+            $platformFee             = (int) round($order->total * 100 * $commissionRate / 100);
+            $params['transfer_data'] = ['destination' => $shop->stripe_account_id];
+            if ($platformFee > 0) {
+                $params['application_fee_amount'] = $platformFee;
+            }
+        }
+
+        $intent = $stripe->paymentIntents->create($params);
 
         return ['id' => $intent->id, 'client_secret' => $intent->client_secret];
     }

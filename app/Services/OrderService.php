@@ -14,8 +14,13 @@ class OrderService
         private CouponService $couponService,
     ) {}
 
-    public function createFromCart(
+    /**
+     * Crée une commande pour un sous-ensemble d'articles (une boutique).
+     * Appelé une fois par boutique depuis CheckoutController.
+     */
+    public function createForShop(
         User       $user,
+        int        $shopId,
         Collection $items,
         array      $shippingAddress,
         array      $billingAddress,
@@ -31,6 +36,7 @@ class OrderService
 
         $order = Order::create([
             'user_id'          => $user->id,
+            'shop_id'          => $shopId,
             'order_number'     => $this->generateOrderNumber(),
             'status'           => 'pending',
             'subtotal'         => $subtotal,
@@ -62,19 +68,42 @@ class OrderService
                 'total_price'      => round($unitPrice * $item->quantity, 2),
                 'vat_rate'         => $item->product->vat_rate ?? 20,
                 'product_snapshot' => [
-                    'name'  => $item->product->name,
-                    'sku'   => $item->product->sku,
-                    'price' => $item->product->price,
-                    'image' => $item->product->images->first()?->url,
+                    'name'    => $item->product->name,
+                    'sku'     => $item->product->sku,
+                    'price'   => $item->product->price,
+                    'shop_id' => $shopId,
+                    'image'   => $item->product->images->first()?->url,
                 ],
             ]);
         }
 
+        event(new OrderPlaced($order));
+
+        return $order;
+    }
+
+    /**
+     * @deprecated Utiliser createForShop() — conservé pour compatibilité boutique #1.
+     */
+    public function createFromCart(
+        User       $user,
+        Collection $items,
+        array      $shippingAddress,
+        array      $billingAddress,
+        ?Coupon    $coupon = null,
+        string     $paymentMethod = 'stripe',
+        ?string    $notes = null,
+    ): Order {
+        $shopId = $items->first()?->product?->shop_id;
+        $order  = $this->createForShop(
+            $user, $shopId ?? 0, $items,
+            $shippingAddress, $billingAddress,
+            $coupon, $paymentMethod, $notes
+        );
+
         if ($coupon) {
             $this->couponService->incrementUsage($coupon);
         }
-
-        event(new OrderPlaced($order));
 
         return $order;
     }

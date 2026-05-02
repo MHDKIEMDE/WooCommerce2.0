@@ -207,6 +207,29 @@ class CartService
         }), 2);
     }
 
+    // ── Grouper les articles par boutique ─────────────────────────────────
+
+    public function groupByShop(Collection $items): array
+    {
+        return $items->groupBy(fn ($item) => $item->product?->shop_id ?? 0)
+            ->map(function ($shopItems, $shopId) {
+                $shop     = $shopItems->first()?->product?->shop;
+                $subtotal = round($shopItems->sum(function ($item) {
+                    $price = (float)($item->product->price ?? 0);
+                    if ($item->variant?->price_modifier) $price += (float)$item->variant->price_modifier;
+                    return $price * $item->quantity;
+                }), 2);
+
+                return [
+                    'shop'     => $shop ? ['id' => $shop->id, 'name' => $shop->name, 'slug' => $shop->slug] : null,
+                    'items'    => $shopItems->values(),
+                    'subtotal' => $subtotal,
+                ];
+            })
+            ->values()
+            ->toArray();
+    }
+
     private function buildCartData(Collection $items, ?User $user): array
     {
         $couponCode = Session::get('cart_coupon');
@@ -214,10 +237,12 @@ class CartService
         $totals     = $this->calculateTotals($items, $coupon);
 
         return [
-            'items'   => $items,
-            'coupon'  => $coupon,
-            'totals'  => $totals,
-            'count'   => $items->sum('quantity'),
+            'items'       => $items,
+            'by_shop'     => $this->groupByShop($items),
+            'coupon'      => $coupon,
+            'totals'      => $totals,
+            'count'       => $items->sum('quantity'),
+            'shop_count'  => $items->groupBy(fn ($i) => $i->product?->shop_id ?? 0)->count(),
         ];
     }
 }

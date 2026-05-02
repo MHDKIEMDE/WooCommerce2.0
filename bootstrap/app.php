@@ -28,6 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule): void {
         // Alerte stock critique — tous les jours à 8h00
         $schedule->command('app:stock-alert')->dailyAt('08:00');
+        // Suivi paniers abandonnés — toutes les heures
+        $schedule->command('carts:track-abandoned')->hourly();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Routes API → toujours JSON, jamais de redirection HTML

@@ -97,6 +97,11 @@ Route::prefix('v1')->group(function () {
             Route::patch('shop',                           [\App\Http\Controllers\Api\V1\Seller\SellerDashboardController::class, 'updateShop']);
             Route::patch('shop/template',                  [\App\Http\Controllers\Api\V1\Seller\SellerDashboardController::class, 'changeTemplate']);
 
+            // Stripe Connect
+            Route::post('stripe/connect',                  [\App\Http\Controllers\Api\V1\Seller\StripeConnectController::class, 'connect']);
+            Route::get('stripe/status',                    [\App\Http\Controllers\Api\V1\Seller\StripeConnectController::class, 'status']);
+            Route::delete('stripe/disconnect',             [\App\Http\Controllers\Api\V1\Seller\StripeConnectController::class, 'disconnect']);
+
             Route::get('products',                         [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'index']);
             Route::post('products',                        [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'store']);
             Route::get('products/{id}',                    [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'show']);

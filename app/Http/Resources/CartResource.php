@@ -18,12 +18,17 @@ class CartResource extends JsonResource
             'product_id' => $this->product_id,
             'variant_id' => $this->variant_id,
             'quantity'   => $this->quantity,
+            'shop'       => $product?->shop ? [
+                'id'   => $product->shop->id,
+                'name' => $product->shop->name,
+                'slug' => $product->shop->slug,
+            ] : null,
             'product'    => $product ? [
-                'name'    => $product->name,
-                'slug'    => $product->slug,
-                'price'   => $product->price,
-                'unit'    => $product->unit,
-                'image'   => $img ? url($img->url) : null,
+                'name'     => $product->name,
+                'slug'     => $product->slug,
+                'price'    => $product->price,
+                'unit'     => $product->unit,
+                'image'    => $img ? url($img->url) : null,
                 'in_stock' => $product->stock_quantity > 0,
             ] : null,
             'variant'    => $this->variant ? [
