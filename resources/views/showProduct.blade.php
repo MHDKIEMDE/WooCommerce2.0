@@ -298,36 +298,58 @@
                             </div>
                         </div>
 
-                        {{-- Encadré vendeur --}}
+                        {{-- ── Encadré vendeur isolé ── --}}
                         @if($product->shop)
-                        <div class="border rounded-3 p-3 mt-4 d-flex align-items-center gap-3">
-                            {{-- Avatar boutique --}}
-                            @if($product->shop->logo)
-                            <img src="{{ Storage::url($product->shop->logo) }}" alt="{{ $product->shop->name }}"
-                                class="rounded-circle flex-shrink-0"
-                                style="width:52px;height:52px;object-fit:cover;">
-                            @else
-                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0"
-                                style="width:52px;height:52px;">
-                                <span class="text-white fw-bold fs-5">{{ strtoupper(substr($product->shop->name, 0, 1)) }}</span>
-                            </div>
-                            @endif
+                        @php
+                            $shopColor = $product->shop->palette?->color_primary ?? '#3b82f6';
+                        @endphp
+                        <a href="{{ route('marketplace.show', $product->shop->slug) }}"
+                           class="d-block text-decoration-none mt-4"
+                           title="Visiter la boutique {{ $product->shop->name }}">
+                            <div class="rounded-3 overflow-hidden border shadow-sm">
+                                {{-- Bandeau coloré boutique --}}
+                                <div class="d-flex align-items-center gap-3 px-4 py-3"
+                                     style="background:{{ $shopColor }}1a; border-left:5px solid {{ $shopColor }};">
+                                    {{-- Avatar --}}
+                                    @if($product->shop->logo)
+                                    <img src="{{ Storage::url($product->shop->logo) }}"
+                                         alt="{{ $product->shop->name }}"
+                                         class="rounded-circle flex-shrink-0 border border-2 border-white shadow-sm"
+                                         style="width:56px;height:56px;object-fit:cover;">
+                                    @else
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm"
+                                         style="width:56px;height:56px;background:{{ $shopColor }};">
+                                        <span class="text-white fw-bold fs-4">{{ strtoupper(substr($product->shop->name, 0, 1)) }}</span>
+                                    </div>
+                                    @endif
 
-                            <div class="flex-grow-1 min-w-0">
-                                <div class="small text-muted">Vendu par</div>
-                                <div class="fw-bold text-truncate">{{ $product->shop->name }}</div>
-                                @if($product->shop->template)
-                                <span class="badge bg-primary-subtle text-primary" style="font-size:.65rem;">
-                                    {{ $product->shop->template->name }}
-                                </span>
-                                @endif
-                            </div>
+                                    {{-- Infos --}}
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="text-muted small mb-1">
+                                            <i class="fas fa-store me-1"></i> Vendu par
+                                        </div>
+                                        <div class="fw-bold fs-6 text-dark">{{ $product->shop->name }}</div>
+                                        @if($product->shop->template)
+                                        <span class="badge rounded-pill mt-1"
+                                              style="background:{{ $shopColor }}22;color:{{ $shopColor }};font-size:.65rem;">
+                                            {{ $product->shop->template->icon ?? '' }} {{ $product->shop->template->name }}
+                                        </span>
+                                        @endif
+                                    </div>
 
-                            <a href="{{ route('marketplace.show', $product->shop->slug) }}"
-                               class="btn btn-outline-primary btn-sm flex-shrink-0">
-                                <i class="fas fa-store me-1"></i> Voir la boutique
-                            </a>
-                        </div>
+                                    {{-- CTA --}}
+                                    <div class="flex-shrink-0 text-end">
+                                        <span class="btn btn-sm rounded-pill fw-semibold text-white"
+                                              style="background:{{ $shopColor }};">
+                                            <i class="fas fa-arrow-right me-1"></i> Voir la boutique
+                                        </span>
+                                        <div class="text-muted small mt-1" style="font-size:.7rem;">
+                                            {{ $product->shop->products()->where('status','active')->count() }} produits
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
                         @endif
 
                     </div>
