@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Events\ShopApproved;
+use App\Events\ShopSuspended;
 use App\Http\Controllers\Api\V1\BaseApiController;
 use App\Http\Resources\ShopResource;
 use App\Models\Shop;
@@ -32,16 +34,21 @@ class ShopController extends BaseApiController
 
     public function approve(int $id): JsonResponse
     {
-        $shop = Shop::findOrFail($id);
+        $shop = Shop::with('owner')->findOrFail($id);
         $shop->update(['status' => 'active']);
+
+        event(new ShopApproved($shop));
 
         return $this->success(new ShopResource($shop), 'Boutique validée.');
     }
 
     public function suspend(Request $request, int $id): JsonResponse
     {
-        $shop = Shop::findOrFail($id);
+        $data   = $request->validate(['reason' => 'nullable|string|max:500']);
+        $shop   = Shop::with('owner')->findOrFail($id);
         $shop->update(['status' => 'suspended']);
+
+        event(new ShopSuspended($shop, $data['reason'] ?? null));
 
         return $this->success(new ShopResource($shop), 'Boutique suspendue.');
     }

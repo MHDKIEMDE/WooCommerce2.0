@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Events\ShopCreated;
 use App\Http\Resources\ShopResource;
-use App\Http\Resources\ShopTemplateResource;
 use App\Models\Shop;
 use App\Models\ShopPalette;
 use App\Models\ShopTemplate;
@@ -105,6 +105,8 @@ class ShopController extends BaseApiController
                 ]);
             }
         }
+
+        event(new ShopCreated($shop->load(['owner', 'template'])));
 
         return $this->success(
             new ShopResource($shop->load(['template', 'palette', 'sections'])),

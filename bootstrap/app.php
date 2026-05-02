@@ -30,6 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('app:stock-alert')->dailyAt('08:00');
         // Suivi paniers abandonnés — toutes les heures
         $schedule->command('carts:track-abandoned')->hourly();
+        // Envoi relances panier abandonné — toutes les heures (après le tracking)
+        $schedule->command('carts:send-reminders')->hourly();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Routes API → toujours JSON, jamais de redirection HTML

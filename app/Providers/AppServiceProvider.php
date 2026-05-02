@@ -7,9 +7,13 @@ use App\Events\OrderDelivered;
 use App\Events\OrderPlaced;
 use App\Events\OrderShipped;
 use App\Events\PaymentConfirmed;
+use App\Events\ShopApproved;
+use App\Events\ShopCreated;
+use App\Events\ShopSuspended;
 use App\Listeners\DecrementStockOnPayment;
 use App\Listeners\SendOrderNotification;
 use App\Listeners\SendPushNotification;
+use App\Listeners\SendShopNotification;
 use App\Models\Product;
 use App\Observers\ProductObserver;
 use App\Services\CartService;
@@ -47,6 +51,11 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(OrderShipped::class,   SendPushNotification::class);
         Event::listen(OrderDelivered::class, SendPushNotification::class);
         Event::listen(OrderCancelled::class, SendPushNotification::class);
+
+        // Email notifications for shop lifecycle
+        Event::listen(ShopCreated::class,   SendShopNotification::class);
+        Event::listen(ShopApproved::class,  SendShopNotification::class);
+        Event::listen(ShopSuspended::class, SendShopNotification::class);
 
         // Partage du nombre d'articles dans le panier avec tous les layouts web
         View::composer('layouts.app', function ($view) {
