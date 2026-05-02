@@ -10,30 +10,30 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Super-admin
+        // Admin principal
         User::firstOrCreate(['email' => 'admin@example.com'], [
             'name'      => 'Administrateur',
             'password'  => Hash::make('admin2026!'),
-            'role'      => 'super-admin',
-            'phone'     => '',
-            'is_active' => true,
-        ]);
-
-        // Admin secondaire
-        User::firstOrCreate(['email' => 'manager@example.com'], [
-            'name'      => 'Manager Boutique',
-            'password'  => Hash::make('manager2026!'),
             'role'      => 'admin',
             'phone'     => '',
             'is_active' => true,
         ]);
 
-        // Compte démo client
+        // Vendeur démo
+        User::firstOrCreate(['email' => 'vendeur@example.com'], [
+            'name'      => 'Vendeur Démo',
+            'password'  => Hash::make('vendeur2026!'),
+            'role'      => 'seller',
+            'phone'     => '',
+            'is_active' => true,
+        ]);
+
+        // Acheteur démo
         User::firstOrCreate(['email' => 'client@example.com'], [
             'name'      => 'Client Démo',
             'password'  => Hash::make('client2026!'),
             'phone'     => '',
-            'role'      => 'customer',
+            'role'      => 'buyer',
             'is_active' => true,
         ]);
     }

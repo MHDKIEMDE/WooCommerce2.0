@@ -44,8 +44,8 @@ class MarketplaceController extends BaseApiController
 
             // Produits par niche (3 par template actif)
             $byNiche = ShopTemplate::withCount(['shops' => fn ($q) => $q->where('status', 'active')])
-                ->having('shops_count', '>', 0)
                 ->get()
+                ->filter(fn ($t) => $t->shops_count > 0)
                 ->map(function ($template) {
                     $products = Product::with(['images', 'shop:id,name,slug'])
                         ->where('status', 'active')
@@ -129,7 +129,8 @@ class MarketplaceController extends BaseApiController
         $niches = Cache::remember('marketplace:niches', now()->addHours(1), function () {
             return ShopTemplate::withCount([
                 'shops' => fn ($q) => $q->where('status', 'active'),
-            ])->get()->map(fn ($t) => [
+            ])->get()
+            ->map(fn ($t) => [
                 'id'          => $t->id,
                 'name'        => $t->name,
                 'slug'        => $t->slug,
