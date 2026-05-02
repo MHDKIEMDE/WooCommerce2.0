@@ -107,6 +107,11 @@ Route::prefix('v1')->group(function () {
             Route::get('stripe/status',                    [\App\Http\Controllers\Api\V1\Seller\StripeConnectController::class, 'status']);
             Route::delete('stripe/disconnect',             [\App\Http\Controllers\Api\V1\Seller\StripeConnectController::class, 'disconnect']);
 
+            // Litiges vendeur
+            Route::get('disputes',                         [\App\Http\Controllers\Api\V1\Seller\SellerDisputeController::class, 'index']);
+            Route::get('disputes/{id}',                    [\App\Http\Controllers\Api\V1\Seller\SellerDisputeController::class, 'show']);
+            Route::post('disputes/{id}/messages',          [\App\Http\Controllers\Api\V1\Seller\SellerDisputeController::class, 'addMessage']);
+
             Route::get('products',                         [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'index']);
             Route::post('products',                        [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'store']);
             Route::get('products/{id}',                    [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'show']);
@@ -115,6 +120,12 @@ Route::prefix('v1')->group(function () {
             Route::post('products/{id}/images',            [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'addImages']);
             Route::delete('products/{id}/images/{imageId}',[\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'deleteImage']);
         });
+
+        // Litiges (acheteur)
+        Route::get('disputes',                             [\App\Http\Controllers\Api\V1\DisputeController::class, 'index']);
+        Route::post('disputes',                            [\App\Http\Controllers\Api\V1\DisputeController::class, 'store']);
+        Route::get('disputes/{id}',                        [\App\Http\Controllers\Api\V1\DisputeController::class, 'show']);
+        Route::post('disputes/{id}/messages',              [\App\Http\Controllers\Api\V1\DisputeController::class, 'addMessage']);
 
         // Wishlist
         Route::get('wishlist',                     [\App\Http\Controllers\Api\V1\WishlistController::class, 'index']);
@@ -164,6 +175,13 @@ Route::prefix('v1')->group(function () {
         // Paramètres
         Route::get('settings',                     [\App\Http\Controllers\Api\V1\Admin\SettingController::class, 'index']);
         Route::patch('settings',                   [\App\Http\Controllers\Api\V1\Admin\SettingController::class, 'update']);
+
+        // Litiges admin
+        Route::get('disputes',                             [\App\Http\Controllers\Api\V1\Admin\DisputeController::class, 'index']);
+        Route::get('disputes/{id}',                        [\App\Http\Controllers\Api\V1\Admin\DisputeController::class, 'show']);
+        Route::post('disputes/{id}/messages',              [\App\Http\Controllers\Api\V1\Admin\DisputeController::class, 'addMessage']);
+        Route::patch('disputes/{id}/resolve',              [\App\Http\Controllers\Api\V1\Admin\DisputeController::class, 'resolve']);
+        Route::patch('disputes/{id}/close',                [\App\Http\Controllers\Api\V1\Admin\DisputeController::class, 'close']);
 
         // Boutiques — validation admin
         Route::get('shops',                                [\App\Http\Controllers\Api\V1\Admin\ShopController::class, 'index']);

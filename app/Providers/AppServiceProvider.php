@@ -7,10 +7,13 @@ use App\Events\OrderDelivered;
 use App\Events\OrderPlaced;
 use App\Events\OrderShipped;
 use App\Events\PaymentConfirmed;
+use App\Events\DisputeOpened;
+use App\Events\DisputeResolved;
 use App\Events\ShopApproved;
 use App\Events\ShopCreated;
 use App\Events\ShopSuspended;
 use App\Listeners\DecrementStockOnPayment;
+use App\Listeners\SendDisputeNotification;
 use App\Listeners\SendOrderNotification;
 use App\Listeners\SendPushNotification;
 use App\Listeners\SendShopNotification;
@@ -51,6 +54,10 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(OrderShipped::class,   SendPushNotification::class);
         Event::listen(OrderDelivered::class, SendPushNotification::class);
         Event::listen(OrderCancelled::class, SendPushNotification::class);
+
+        // Email notifications for dispute lifecycle
+        Event::listen(DisputeOpened::class,   SendDisputeNotification::class);
+        Event::listen(DisputeResolved::class,  SendDisputeNotification::class);
 
         // Email notifications for shop lifecycle
         Event::listen(ShopCreated::class,   SendShopNotification::class);
