@@ -130,12 +130,17 @@
                     <div class="navbar-nav mx-auto">
                         <a href="{{ route('home') }}" class="nav-item nav-link active">Accueil</a>
                         <a href="{{ route('shop.index') }}" class="nav-item nav-link">Boutique</a>
+                        <a href="{{ route('marketplace.index') }}" class="nav-item nav-link">Marketplace</a>
                         <a href="{{ route('cart.index') }}" class="nav-item nav-link">Panier</a>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0 bg-secondary rounded-0">
                                 <a href="{{ route('checkout.show') }}" class="dropdown-item">Checkout</a>
                                 <a href="{{ route('testimonial.index') }}" class="dropdown-item">Témoignage</a>
+                                <a href="{{ route('contact') }}" class="dropdown-item">Contact</a>
+                                <a href="{{ route('seller.register') }}" class="dropdown-item text-primary fw-semibold">
+                                    <i class="fas fa-store me-1"></i> Devenir vendeur
+                                </a>
                             </div>
                         </div>
                         <a href="{{ route('contact') }}" class="nav-item nav-link">Contact</a>

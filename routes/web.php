@@ -24,6 +24,7 @@ use App\Http\Controllers\Web\Admin\DeliveryZoneController;
 use App\Http\Controllers\Web\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Web\Admin\ShopController as AdminShopController;
 use App\Http\Controllers\Web\MarketplaceController;
+use App\Http\Controllers\Web\SellerOnboardingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -73,6 +74,11 @@ Route::delete('/cart/coupon',    [WebCartController::class, 'removeCoupon'])->na
 // ── Marketplace public ────────────────────────────────────────────────────
 Route::get('/boutiques',         [MarketplaceController::class, 'index'])->name('marketplace.index');
 Route::get('/boutiques/{slug}',  [MarketplaceController::class, 'show'])->name('marketplace.show');
+
+// ── Inscription vendeur ────────────────────────────────────────────────────
+Route::get('/devenir-vendeur',   [SellerOnboardingController::class, 'show'])->name('seller.register')->middleware('auth');
+Route::post('/devenir-vendeur',  [SellerOnboardingController::class, 'store'])->name('seller.register.store')->middleware('auth');
+Route::get('/ma-boutique/attente', [SellerOnboardingController::class, 'pending'])->name('seller.pending')->middleware('auth');
 
 // ── Pages statiques ───────────────────────────────────────────────────────
 Route::view('/contact', 'contact')->name('contact');
