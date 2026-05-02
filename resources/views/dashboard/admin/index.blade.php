@@ -63,6 +63,123 @@
         </div>
     </div>
 
+    {{-- KPIs Marketplace --}}
+    <div class="row g-3 mb-4">
+        <div class="col-12"><h6 class="text-uppercase text-muted small fw-bold mb-0"><i class="fas fa-store me-1"></i> Marketplace</h6></div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card border-start border-primary border-4 shadow-sm h-100">
+                <div class="card-body py-3">
+                    <div class="text-muted small">Boutiques</div>
+                    <div class="fs-4 fw-bold">{{ $marketplace['shops_total'] }}</div>
+                    <div class="text-success small">{{ $marketplace['shops_active'] }} actives</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card border-start border-warning border-4 shadow-sm h-100">
+                <div class="card-body py-3">
+                    <div class="text-muted small">En attente</div>
+                    <div class="fs-4 fw-bold text-warning">{{ $marketplace['shops_pending'] }}</div>
+                    <div class="text-muted small">à valider</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card border-start border-danger border-4 shadow-sm h-100">
+                <div class="card-body py-3">
+                    <div class="text-muted small">Suspendues</div>
+                    <div class="fs-4 fw-bold text-danger">{{ $marketplace['shops_suspended'] }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card border-start border-info border-4 shadow-sm h-100">
+                <div class="card-body py-3">
+                    <div class="text-muted small">Vendeurs</div>
+                    <div class="fs-4 fw-bold">{{ $marketplace['sellers_total'] }}</div>
+                    <div class="text-muted small">{{ $marketplace['stripe_connected'] }} Stripe</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card border-start border-danger border-4 shadow-sm h-100">
+                <div class="card-body py-3">
+                    <div class="text-muted small">Litiges ouverts</div>
+                    <div class="fs-4 fw-bold text-danger">{{ $marketplace['disputes_open'] }}</div>
+                    <div class="text-muted small">/ {{ $marketplace['disputes_total'] }} total</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-6">
+            <div class="card border-start border-secondary border-4 shadow-sm h-100">
+                <div class="card-body py-3">
+                    <div class="text-muted small">Actions rapides</div>
+                    @if($marketplace['shops_pending'] > 0)
+                    <a href="{{ route('admin.shops.index') }}" class="btn btn-sm btn-warning w-100 mt-1">
+                        <i class="fas fa-check me-1"></i>Valider boutiques
+                    </a>
+                    @else
+                    <span class="text-success small d-block mt-2"><i class="fas fa-check-circle me-1"></i>Tout à jour</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Boutiques en attente + Litiges --}}
+    @if($pendingShops->isNotEmpty() || $openDisputes->isNotEmpty())
+    <div class="row g-4 mb-4">
+        @if($pendingShops->isNotEmpty())
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-warning">
+                <div class="card-header bg-warning bg-opacity-10 fw-semibold">
+                    <i class="fas fa-store me-2 text-warning"></i>Boutiques en attente ({{ $pendingShops->count() }})
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <tbody>
+                            @foreach($pendingShops as $shop)
+                            <tr>
+                                <td class="fw-semibold">{{ $shop->name }}</td>
+                                <td class="text-muted">{{ $shop->owner?->name }}</td>
+                                <td class="text-muted">{{ $shop->created_at->diffForHumans() }}</td>
+                                <td class="text-end">
+                                    <a href="{{ route('admin.shops.index') }}" class="btn btn-xs btn-outline-success btn-sm py-0 px-2">Valider</a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @endif
+        @if($openDisputes->isNotEmpty())
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger bg-opacity-10 fw-semibold">
+                    <i class="fas fa-gavel me-2 text-danger"></i>Litiges ouverts ({{ $openDisputes->count() }})
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <tbody>
+                            @foreach($openDisputes as $dispute)
+                            <tr>
+                                <td class="fw-semibold">#{{ $dispute->order?->order_number ?? $dispute->order_id }}</td>
+                                <td class="text-muted">{{ $dispute->user?->name }}</td>
+                                <td><span class="badge bg-{{ $dispute->status === 'open' ? 'danger' : 'warning' }}">{{ $dispute->status }}</span></td>
+                                <td class="text-muted">{{ $dispute->created_at->diffForHumans() }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @endif
+    </div>
+    @endif
+
     {{-- Graphiques --}}
     <div class="row g-4 mb-4">
 

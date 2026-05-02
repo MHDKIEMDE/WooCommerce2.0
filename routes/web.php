@@ -22,6 +22,7 @@ use App\Http\Controllers\Web\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Web\Admin\StockController as AdminStockController;
 use App\Http\Controllers\Web\Admin\DeliveryZoneController;
 use App\Http\Controllers\Web\Admin\NotificationController as AdminNotificationController;
+use App\Http\Controllers\Web\Admin\ShopController as AdminShopController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -123,6 +124,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('dashboard')->name('admin.')->
     Route::get('theme-settings', [ThemeSettingsController::class, 'edit'])->name('theme-settings.edit');
     Route::put('theme-settings', [ThemeSettingsController::class, 'update'])->name('theme-settings.update');
     Route::resource('delivery-zones', DeliveryZoneController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::get('shops',                    [AdminShopController::class, 'index'])->name('shops.index');
+    Route::patch('shops/{shop}/approve',   [AdminShopController::class, 'approve'])->name('shops.approve');
+    Route::patch('shops/{shop}/suspend',   [AdminShopController::class, 'suspend'])->name('shops.suspend');
     Route::get('notifications',             [AdminNotificationController::class, 'index'])->name('notifications.index');
     Route::get('notifications/send',        [AdminNotificationController::class, 'send'])->name('notifications.send');
     Route::post('notifications/broadcast',  [AdminNotificationController::class, 'broadcast'])->name('notifications.broadcast');

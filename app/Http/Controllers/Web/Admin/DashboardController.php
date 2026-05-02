@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Dispute;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Shop;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +26,35 @@ class DashboardController extends Controller
                                     ->where('stock_quantity', '>', 0)->count(),
         ];
 
-        // Commandes + revenus sur les 30 derniers jours (par jour)
+        // KPIs marketplace
+        $marketplace = [
+            'shops_total'      => Shop::count(),
+            'shops_active'     => Shop::where('status', 'active')->count(),
+            'shops_pending'    => Shop::where('status', 'pending')->count(),
+            'shops_suspended'  => Shop::where('status', 'suspended')->count(),
+            'sellers_total'    => User::where('role', 'seller')->count(),
+            'stripe_connected' => Shop::whereNotNull('stripe_account_id')->count(),
+            'disputes_open'    => class_exists(Dispute::class) ? Dispute::whereIn('status', ['open', 'pending'])->count() : 0,
+            'disputes_total'   => class_exists(Dispute::class) ? Dispute::count() : 0,
+        ];
+
+        // Boutiques en attente de validation
+        $pendingShops = Shop::with('owner')
+            ->where('status', 'pending')
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        // Litiges ouverts récents
+        $openDisputes = class_exists(Dispute::class)
+            ? Dispute::with(['user', 'order'])
+                ->whereIn('status', ['open', 'pending'])
+                ->latest()
+                ->limit(5)
+                ->get()
+            : collect();
+
+        // Commandes + revenus sur les 30 derniers jours
         $ordersChart = Order::select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('COUNT(*) as orders'),
@@ -36,8 +66,7 @@ class DashboardController extends Controller
             ->get()
             ->keyBy('date');
 
-        // Remplir les jours manquants
-        $labels  = [];
+        $labels = [];
         $ordersCounts = [];
         $revenueData  = [];
         for ($i = 29; $i >= 0; $i--) {
@@ -76,7 +105,8 @@ class DashboardController extends Controller
             ->get();
 
         return view('dashboard.admin.index', compact(
-            'kpis', 'labels', 'ordersCounts', 'revenueData',
+            'kpis', 'marketplace', 'pendingShops', 'openDisputes',
+            'labels', 'ordersCounts', 'revenueData',
             'usersData', 'topProducts', 'recentOrders'
         ));
     }

@@ -1,7 +1,7 @@
 @extends('dashboard.admin.layout.app')
 @section('title', 'Zones de livraison')
 
-@section('content')
+@section('contents')
 <div class="container-fluid px-4">
     <h1 class="mt-4">Zones de livraison</h1>
     <ol class="breadcrumb mb-4">
