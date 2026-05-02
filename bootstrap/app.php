@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role'        => \App\Http\Middleware\EnsureUserHasRole::class,
             'detect.shop' => \App\Http\Middleware\DetectShop::class,
             'shop.owner'  => \App\Http\Middleware\EnsureShopOwner::class,
+            'seller'      => \App\Http\Middleware\EnsureIsSeller::class,
         ]);
     })
     ->withSchedule(function (Schedule $schedule): void {

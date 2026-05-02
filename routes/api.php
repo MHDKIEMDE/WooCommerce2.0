@@ -30,6 +30,7 @@ Route::prefix('v1')->group(function () {
     Route::get('templates',                        [\App\Http\Controllers\Api\V1\ShopController::class, 'templates']);
     Route::get('templates/{slug}/palettes',        [\App\Http\Controllers\Api\V1\ShopController::class, 'palettes']);
     Route::get('shops/{slug}',                     [\App\Http\Controllers\Api\V1\ShopController::class, 'show']);
+    Route::get('shops/{slug}/products',            [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'publicIndex']);
 
     // ── Catalogue (public) ────────────────────────────────────────────────
     Route::get('products',                         [\App\Http\Controllers\Api\V1\ProductController::class, 'index']);
@@ -82,11 +83,27 @@ Route::prefix('v1')->group(function () {
             Route::patch('addresses/{id}/default', [\App\Http\Controllers\Api\V1\AddressController::class, 'setDefault']);
         });
 
-        // Boutique vendeur
+        // Boutique vendeur — création
         Route::post('shops',                               [\App\Http\Controllers\Api\V1\ShopController::class, 'store']);
         Route::middleware('shop.owner')->group(function () {
             Route::patch('shops/{slug}/appearance',        [\App\Http\Controllers\Api\V1\Seller\ShopAppearanceController::class, 'update']);
             Route::patch('shops/{slug}/sections',          [\App\Http\Controllers\Api\V1\Seller\ShopAppearanceController::class, 'updateSections']);
+        });
+
+        // Espace vendeur (seller uniquement)
+        Route::middleware('seller')->prefix('seller')->group(function () {
+            Route::get('dashboard',                        [\App\Http\Controllers\Api\V1\Seller\SellerDashboardController::class, 'index']);
+            Route::get('shop',                             [\App\Http\Controllers\Api\V1\Seller\SellerDashboardController::class, 'shop']);
+            Route::patch('shop',                           [\App\Http\Controllers\Api\V1\Seller\SellerDashboardController::class, 'updateShop']);
+            Route::patch('shop/template',                  [\App\Http\Controllers\Api\V1\Seller\SellerDashboardController::class, 'changeTemplate']);
+
+            Route::get('products',                         [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'index']);
+            Route::post('products',                        [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'store']);
+            Route::get('products/{id}',                    [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'show']);
+            Route::patch('products/{id}',                  [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'update']);
+            Route::delete('products/{id}',                 [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'destroy']);
+            Route::post('products/{id}/images',            [\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'addImages']);
+            Route::delete('products/{id}/images/{imageId}',[\App\Http\Controllers\Api\V1\Seller\SellerProductController::class, 'deleteImage']);
         });
 
         // Wishlist

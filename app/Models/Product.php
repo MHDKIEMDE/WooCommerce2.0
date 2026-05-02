@@ -11,7 +11,7 @@ class Product extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name', 'slug', 'description', 'short_description',
+        'shop_id', 'name', 'slug', 'description', 'short_description',
         'price', 'compare_price', 'cost_price', 'sku',
         'stock_quantity', 'low_stock_threshold',
         'category_id', 'brand_id', 'status', 'featured',
@@ -29,6 +29,11 @@ class Product extends Model
             'vat_rate'      => 'decimal:2',
             'featured'      => 'boolean',
         ];
+    }
+
+    public function shop()
+    {
+        return $this->belongsTo(Shop::class);
     }
 
     public function category()

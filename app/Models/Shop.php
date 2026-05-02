@@ -43,6 +43,11 @@ class Shop extends Model
         return $this->hasMany(ShopSection::class)->orderBy('sort_order');
     }
 
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';
