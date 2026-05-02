@@ -1,7 +1,7 @@
-# WooCommerce 2.0 — Plateforme E-Commerce
+# Monghetto — Marketplace Multi-Vendeurs
 
-Backend API REST pour une plateforme de vente de produits alimentaires.
-Conçu pour être consommé par une application mobile **Flutter** (iOS & Android) et un panneau d'administration.
+Plateforme marketplace multi-vendeurs construite sur **Laravel 12 / PHP 8.3**.  
+Deux canaux parallèles : un **dashboard admin Blade** et une **API REST `/api/v1/`** pour l'application mobile Flutter.
 
 ---
 
@@ -10,32 +10,32 @@ Conçu pour être consommé par une application mobile **Flutter** (iOS & Androi
 | Composant | Technologie |
 |-----------|-------------|
 | Framework | Laravel 12 · PHP 8.3 |
-| Base de données | MySQL 8 |
-| Authentification | Laravel Sanctum (tokens Bearer multi-device) |
-| Paiements | Laravel Cashier · Stripe |
+| Base de données | SQLite (dev) · MySQL 8 (prod optionnel) |
+| Authentification | Laravel Sanctum — tokens Bearer multi-device |
+| Paiements | Stripe Connect (Express accounts) |
 | Notifications push | Firebase FCM HTTP v1 |
-| Cache / Queue | Redis |
-| Tests | PHPUnit · Pest |
+| Cache / Queue | Array/Sync (dev) · Redis (prod) |
+| Tests | PHPUnit — 63 tests |
 | Build frontend | Vite |
 
 ---
 
-## Prérequis
+## Comptes de démonstration
 
-- PHP 8.2+
-- Composer 2
-- MySQL 8
-- Redis
-- Node.js + npm
+| Rôle | Email | Mot de passe | Accès |
+|------|-------|-------------|-------|
+| Admin | `admin@example.com` | `admin2026!` | `http://localhost:8000/dashboard` |
+| Vendeur | `vendeur@example.com` | `vendeur2026!` | API `/api/v1/seller/*` |
+| Acheteur | `client@example.com` | `client2026!` | API `/api/v1/account` |
 
 ---
 
-## Installation
+## Installation locale (SQLite)
 
 ```bash
 # 1. Cloner et installer les dépendances
 git clone <repo>
-cd WooCommerce2.0
+cd ShopAgri
 composer install
 npm install
 
@@ -43,46 +43,78 @@ npm install
 cp .env.example .env
 php artisan key:generate
 
-# 3. Configurer la base de données dans .env
-# DB_CONNECTION=mysql
-# DB_DATABASE=Shop
-# DB_USERNAME=...
-# DB_PASSWORD=...
+# 3. Base SQLite + migrations + seeders
+touch database/database.sqlite
+php artisan migrate --seed
 
-# 4. Migrations et seeders
-php artisan migrate
-php artisan db:seed
+# 4. Lien de stockage pour les images
+php artisan storage:link
 
 # 5. Lancer les serveurs
-php artisan serve        # API : http://localhost:8000
-npm run dev              # Assets Vite
+php artisan serve        # http://localhost:8000
+npm run dev              # Vite hot reload
 ```
+
+> Pour MySQL : modifier `.env` avec `DB_CONNECTION=mysql`, `DB_DATABASE=Shop`, `DB_USERNAME=...`, `DB_PASSWORD=...`
 
 ---
 
 ## Variables d'environnement clés
 
 ```env
-APP_NAME=WooCommerce
+APP_NAME=Monghetto
 APP_URL=http://localhost:8000
+ROOT_DOMAIN=monghetto.com          # Détection sous-domaines boutiques *.monghetto.com
 
-DB_CONNECTION=mysql
-DB_DATABASE=Shop
+# Base de données
+DB_CONNECTION=sqlite               # sqlite (dev) | mysql (prod)
+DB_DATABASE=/chemin/vers/database/database.sqlite
 
-SANCTUM_TOKEN_EXPIRATION=43200   # 30 jours en minutes
+# Cache & Queue
+CACHE_STORE=array                  # array (dev) | redis (prod)
+QUEUE_CONNECTION=sync              # sync (dev) | redis (prod)
 
-STRIPE_KEY=pk_...
-STRIPE_SECRET=sk_...
+# Stripe Connect
+STRIPE_KEY=pk_test_...
+STRIPE_SECRET=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 
-FIREBASE_PROJECT_ID=...
-FIREBASE_CREDENTIALS=storage/app/firebase-credentials.json
+# Firebase FCM
+FCM_PROJECT_ID=your-project-id
+FCM_CREDENTIALS_PATH=/chemin/vers/firebase-service-account.json
 
-REDIS_HOST=127.0.0.1
-REDIS_PORT=6379
+# Sanctum
+SANCTUM_TOKEN_EXPIRATION=43200     # 30 jours en minutes
+SANCTUM_STATEFUL_DOMAINS=localhost,127.0.0.1
+```
 
-QUEUE_CONNECTION=redis
-CACHE_STORE=redis
+---
+
+## Commandes utiles
+
+```bash
+# Développement
+php artisan serve                               # Démarrer le serveur local
+php artisan migrate:fresh --seed               # Reset complet DB + seeders
+php artisan db:seed --class=ShopTemplateSeeder # Seeder des 7 niches + 35 palettes
+php artisan storage:link                       # Lien public/storage (images)
+
+# Tests
+php artisan test                               # Tous les tests (63)
+php artisan test --filter CartServiceTest      # Un test précis
+php artisan test --testsuite=Unit              # Unit uniquement
+php artisan test --testsuite=Feature           # Feature uniquement
+
+# Maintenance
+php artisan route:list                         # Lister toutes les routes
+php artisan cache:clear                        # Vider le cache
+php artisan config:clear                       # Vider le cache de config
+php artisan view:clear                         # Vider les vues compilées
+php artisan queue:work                         # Démarrer le worker Redis (prod)
+php artisan app:stock-alert                    # Lancer les alertes stock manuellement
+
+# Marketplace
+php artisan marketplace:migrate-shop           # Migrer la boutique legacy vers le marketplace
 ```
 
 ---
@@ -92,247 +124,195 @@ CACHE_STORE=redis
 ```
 app/
 ├── Http/
-│   ├── Controllers/Api/V1/
-│   │   ├── Auth/          ← Inscription, login, OTP reset
-│   │   ├── Admin/         ← Dashboard, produits, commandes, rapports
-│   │   └── ...            ← Catalogue, panier, compte client
-│   ├── Requests/          ← Validation (Form Requests)
-│   ├── Resources/         ← Transformation JSON (API Resources)
-│   └── Middleware/
+│   ├── Controllers/
+│   │   ├── Api/V1/                ← API REST Flutter
+│   │   │   ├── Auth/              ← Inscription, login, OTP reset
+│   │   │   ├── Admin/             ← Dashboard, produits, commandes, litiges
+│   │   │   ├── Seller/            ← Espace vendeur (produits, Stripe Connect)
+│   │   │   └── ...                ← Marketplace, catalogue, panier, compte
+│   │   └── Web/
+│   │       ├── Admin/             ← Dashboard Blade admin
+│   │       └── ...                ← Storefront public Blade
+│   ├── Middleware/
+│   │   ├── DetectShop.php         ← Résout le sous-domaine → boutique active
+│   │   ├── EnsureShopOwner.php    ← Vérifie que l'utilisateur est propriétaire
+│   │   └── EnsureIsSeller.php     ← Vérifie le rôle seller
+│   ├── Requests/Api/              ← Validation Form Requests
+│   └── Resources/                 ← Transformation JSON (API Resources)
 ├── Models/
-├── Services/              ← Logique métier (Cart, Order, Stock, Push...)
-├── Events/ · Listeners/   ← OrderPlaced, OrderShipped, PaymentConfirmed...
-├── Observers/             ← Slug auto, rating_avg
-├── Notifications/         ← Emails + Push FCM
-├── Policies/              ← Autorisations par ressource
-└── Jobs/                  ← Emails et push en asynchrone
+│   ├── Shop.php                   ← Boutique (template, palette, sections, Stripe)
+│   ├── ShopTemplate.php           ← 7 niches de boutique
+│   ├── ShopPalette.php            ← 35 palettes couleur (5 par niche)
+│   ├── ShopSection.php            ← Sections de page boutique (hero, produits…)
+│   ├── Product.php · Order.php    ← Multi-boutique via shop_id
+│   ├── Dispute.php                ← Litiges acheteur / vendeur / admin
+│   └── AbandonedCart.php          ← Suivi paniers abandonnés
+├── Services/
+│   ├── CartService.php            ← Panier invité + connecté + groupByShop()
+│   ├── OrderService.php           ← createForShop() — une Order par boutique
+│   ├── StockService.php           ← Vérification et décrémentation du stock
+│   ├── CouponService.php          ← Calcul des remises coupons
+│   ├── PushNotificationService.php← Envoi FCM Firebase
+│   └── WhatsAppService.php        ← Notifications WhatsApp via CallMeBot
+├── Events/ · Listeners/           ← OrderPlaced, ShopApproved, DisputeOpened…
+├── Console/Commands/
+│   ├── TrackAbandonedCartsCommand.php        ← Tâche horaire
+│   └── SendAbandonedCartRemindersCommand.php ← Tâche horaire
+└── Notifications/                 ← Emails + Push (commandes, boutiques, litiges)
 
 routes/
-├── api.php                ← Tous les endpoints /api/v1/
-└── console.php            ← Tâches planifiées
+├── api.php                        ← 110+ endpoints /api/v1/
+└── web.php                        ← Dashboard admin Blade + storefront public
 ```
+
+---
+
+## Rôles utilisateurs
+
+| Rôle | Description | Routes |
+|------|-------------|--------|
+| `buyer` | Acheteur — catalogue, panier, commandes, litiges, wishlist | `/api/v1/*` |
+| `seller` | Vendeur — gestion boutique, produits, Stripe Connect | `/api/v1/seller/*` |
+| `admin` | Administrateur — validation boutiques, litiges, rapports | `/api/v1/admin/*` · `/dashboard` |
+
+---
+
+## Marketplace — Fonctionnement
+
+### Boutiques et niches
+- **7 templates** : mode, alimentation, digital, artisanat, tech, beauté, générique
+- **35 palettes couleur** (5 par niche) avec couleurs primaires, accent, fond et ambiance
+- Chaque boutique obtient un sous-domaine `slug.monghetto.com` détecté automatiquement par le middleware `DetectShop`
+
+### Checkout multi-boutique
+- Le panier regroupe les articles par boutique avec `CartService::groupByShop()`
+- Une `Order` + un `PaymentIntent` Stripe créés **par boutique** au checkout
+- Stripe Connect Express : les fonds sont reversés automatiquement au vendeur moins la commission de la plateforme (`application_fee_amount`)
+
+### Flux création boutique (vendeur)
+1. Inscription avec `role: seller`
+2. `POST /api/v1/shops` → boutique créée, statut `pending`, email de confirmation envoyé
+3. Admin approuve depuis `/dashboard/shops` → statut `active`, email vendeur
+4. Vendeur connecte Stripe via `POST /api/v1/seller/stripe/connect` → lien onboarding Stripe
+5. Vendeur ajoute ses produits `POST /api/v1/seller/products`
 
 ---
 
 ## Endpoints principaux
 
+### Marketplace (public)
+```
+GET  /api/v1/marketplace                  ← Accueil : boutiques vedettes, produits, stats
+GET  /api/v1/marketplace/shops            ← Liste boutiques (filtre: niche, search, sort)
+GET  /api/v1/marketplace/niches           ← 7 niches avec nombre de boutiques
+```
+
 ### Authentification
 ```
-POST   /api/v1/auth/register
-POST   /api/v1/auth/login
-POST   /api/v1/auth/logout              [auth]
-POST   /api/v1/auth/logout-all          [auth]
-POST   /api/v1/auth/forgot-password
-POST   /api/v1/auth/verify-reset-code
-POST   /api/v1/auth/reset-password
+POST /api/v1/auth/register                ← Champs: name, email, password, role (buyer|seller)
+POST /api/v1/auth/login                   ← Champs: email, password, device_name
+POST /api/v1/auth/logout          [auth]
+POST /api/v1/auth/forgot-password
+POST /api/v1/auth/verify-reset-code
+POST /api/v1/auth/reset-password
 ```
 
 ### Catalogue (public)
 ```
-GET    /api/v1/products
-GET    /api/v1/products/{slug}
-GET    /api/v1/categories
-GET    /api/v1/categories/{slug}/products
-GET    /api/v1/brands
-GET    /api/v1/search?q=...
+GET  /api/v1/products                     ← Filtres: category, brand, shop, niche, min_rating
+GET  /api/v1/products/{slug}
+GET  /api/v1/categories
+GET  /api/v1/search?q=...                 ← Filtres: niche, shop, min_price, max_price
+GET  /api/v1/marketplace/niches
 ```
 
-### Panier & Commandes
+### Espace vendeur `[auth · role:seller]`
 ```
-GET    /api/v1/cart
-POST   /api/v1/cart/items
-POST   /api/v1/checkout
-POST   /api/v1/checkout/webhook         [signature Stripe — sans auth]
-GET    /api/v1/orders
-GET    /api/v1/orders/{id}/invoice
+GET    /api/v1/seller/dashboard
+GET    /api/v1/seller/shop
+PATCH  /api/v1/seller/shop
+PATCH  /api/v1/seller/shop/template
+POST   /api/v1/seller/stripe/connect      ← Lien onboarding Stripe Express
+GET    /api/v1/seller/stripe/status
+GET    /api/v1/seller/products            ← CRUD produits vendeur
+POST   /api/v1/seller/products
+PATCH  /api/v1/seller/products/{id}
+DELETE /api/v1/seller/products/{id}
+GET    /api/v1/seller/disputes
 ```
 
-### Administration `[auth · role:admin]`
+### Administration API `[auth · role:admin]`
 ```
 GET    /api/v1/admin/dashboard
-GET    /api/v1/admin/products           + POST, PATCH, DELETE
-GET    /api/v1/admin/orders             + PATCH /{id}/status
-GET    /api/v1/admin/users              + PATCH /{id}/toggle-active
+GET    /api/v1/admin/shops
+PATCH  /api/v1/admin/shops/{id}/approve
+PATCH  /api/v1/admin/shops/{id}/suspend
+GET    /api/v1/admin/disputes
+PATCH  /api/v1/admin/disputes/{id}/resolve
 GET    /api/v1/admin/reports/sales
+GET    /api/v1/admin/reports/products
+GET    /api/v1/admin/reports/customers
 ```
 
-> Voir [cahier_des_charges.md](cahier_des_charges.md) pour la liste complète des 60+ endpoints.
+> Voir `routes/api.php` pour la liste complète des 110+ endpoints.
 
 ---
 
 ## Format de réponse API
 
-Toutes les réponses respectent ce format uniforme :
-
-**Succès**
 ```json
+// Succès
 {
   "success": true,
-  "message": "Produits récupérés avec succès",
+  "message": "Produits récupérés.",
   "data": [...],
   "meta": { "current_page": 1, "last_page": 8, "per_page": 15, "total": 112 }
 }
-```
 
-**Erreur**
-```json
+// Erreur
 {
   "success": false,
-  "message": "Les données sont invalides",
-  "errors": { "email": ["L'adresse email est déjà utilisée"] }
+  "message": "Données invalides.",
+  "errors": { "email": ["L'email est déjà utilisé."] }
 }
-```
-
----
-
-## Authentification multi-device (Flutter)
-
-Chaque appareil Flutter reçoit son propre token Bearer. Un même `device_name` révoque l'ancien token.
-
-```json
-POST /api/v1/auth/login
-{
-  "email": "user@example.com",
-  "password": "...",
-  "device_name": "iPhone 15 Pro de Jean",
-  "platform": "ios",
-  "fcm_token": "..."
-}
-```
-
----
-
-## Commandes utiles
-
-```bash
-php artisan test                        # Tous les tests
-php artisan test --filter NomDuTest     # Un test précis
-php artisan route:list                  # Liste des routes
-php artisan queue:work                  # Démarrer le worker Redis
-php artisan cache:clear                 # Vider le cache
-php artisan config:clear                # Vider le cache de config
 ```
 
 ---
 
 ## Tests
 
-Objectif de couverture : **≥ 70%** sur les Services critiques.
-
 ```bash
-php artisan test
-php artisan test --coverage
+php artisan test                           # 63 tests · 0 échec
+php artisan test --testsuite=Unit          # CartService, StockService, OrderService, CouponService
+php artisan test --testsuite=Feature       # Auth, Catalogue, Panier, Marketplace, Admin
+php artisan test --filter MarketplaceApiTest  # Un fichier précis
 ```
 
 ---
 
-*Voir [cahier_des_charges.md](cahier_des_charges.md) pour les spécifications complètes.*
-*Développé par MHDKIEMDE — Mars 2026*
+## Déploiement VPS (production)
 
+Voir `DEPLOY.md` pour la configuration complète : Nginx wildcard `*.monghetto.com`, SSL Let's Encrypt, Supervisor queue worker, Docker.
 
+```bash
+# Première mise en production sur le VPS
+php artisan migrate --force
+php artisan db:seed --force
+php artisan storage:link
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 
-image.png
-472×458
-Sur la page d'accueilapres le formulaire de recherche ya une section qui ecouter les categorie fait moi des seeder pour voir comment il son affichier pour mieux travail 
+# Démarrer le worker de queue (ou via Supervisor)
+php artisan queue:work --daemon
+```
 
-apres ca tu peux push a mon nom
-You've hit your limit · resets 7pm (Africa/Ouagadougou)
+Variables à renseigner dans `.env` avant déploiement :
+- `STRIPE_KEY` / `STRIPE_SECRET` / `STRIPE_WEBHOOK_SECRET`
+- `MAIL_HOST` / `MAIL_USERNAME` / `MAIL_PASSWORD`
+- `FCM_PROJECT_ID` / `FCM_CREDENTIALS_PATH`
+- `WHATSAPP_PHONE` / `WHATSAPP_CALLMEBOT_APIKEY`
 
+---
 
-APP_ENV=production
-APP_KEY=                          # LAISSER VIDE → généré automatiquement au 1er démarrage
-APP_DEBUG=false
-APP_URL=https://shop.monghetto.com
-
-LOG_CHANNEL=stack
-LOG_LEVEL=warning
-
-# ─────────────────────────────────────────────────────────────────────────────
-# BASE DE DONNÉES — SQLite (fichier dans le volume Docker)
-# ─────────────────────────────────────────────────────────────────────────────
-DB_CONNECTION=sqlite
-
-# ─────────────────────────────────────────────────────────────────────────────
-# CACHE & QUEUE — Redis (service Docker "redis")
-# ─────────────────────────────────────────────────────────────────────────────
-CACHE_STORE=redis
-QUEUE_CONNECTION=redis
-SESSION_DRIVER=redis
-SESSION_LIFETIME=120
-
-REDIS_HOST=redis
-REDIS_PASSWORD=null
-REDIS_PORT=6379
-REDIS_CACHE_DB=0
-REDIS_QUEUE_DB=1
-
-# ─────────────────────────────────────────────────────────────────────────────
-# EMAIL — À COMPLÉTER
-# ─────────────────────────────────────────────────────────────────────────────
-MAIL_MAILER=smtp
-MAIL_HOST=
-MAIL_PORT=587
-MAIL_USERNAME=
-MAIL_PASSWORD=
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="noreply@shop.monghetto.com"
-MAIL_FROM_NAME="${APP_NAME}"
-
-# ─────────────────────────────────────────────────────────────────────────────
-# PAIEMENT — STRIPE — À COMPLÉTER
-# https://dashboard.stripe.com/apikeys
-# ─────────────────────────────────────────────────────────────────────────────
-STRIPE_KEY=
-STRIPE_SECRET=
-STRIPE_WEBHOOK_SECRET=
-
-# ─────────────────────────────────────────────────────────────────────────────
-# NOTIFICATIONS PUSH — FIREBASE / FCM — À COMPLÉTER
-# ─────────────────────────────────────────────────────────────────────────────
-FCM_PROJECT_ID=
-FCM_CREDENTIALS_PATH=/var/www/html/firebase-service-account.json
-
-# ─────────────────────────────────────────────────────────────────────────────
-# SANCTUM — API tokens Flutter
-# ─────────────────────────────────────────────────────────────────────────────
-SANCTUM_STATEFUL_DOMAINS=shop.monghetto.com
-
-# ─────────────────────────────────────────────────────────────────────────────
-# STOCKAGE FICHIERS
-# ─────────────────────────────────────────────────────────────────────────────
-FILESYSTEM_DISK=public
-
-# ─────────────────────────────────────────────────────────────────────────────
-# WHATSAPP — CallMeBot — À COMPLÉTER
-# ─────────────────────────────────────────────────────────────────────────────
-WHATSAPP_PHONE=
-WHATSAPP_CALLMEBOT_APIKEY=
-
-# ─────────────────────────────────────────────────────────────────────────────
-# VITE
-# ─────────────────────────────────────────────────────────────────────────────
-VITE_APP_NAME="${APP_NAME}"
-VITE_STRIPE_KEY="${STRIPE_KEY}"
-Fichier créé : .env.vps
-
-Ce qui est déjà configuré pour la production :
-
-APP_URL=https://shop.monghetto.com
-DB_CONNECTION=sqlite (pas de credentials MySQL)
-REDIS_HOST=redis (nom du service docker-compose)
-APP_KEY vide → généré automatiquement au 1er démarrage par l'entrypoint
-APP_DEBUG=false, LOG_LEVEL=warning
-Ce que tu dois renseigner avant de l'envoyer sur le VPS :
-
-STRIPE_KEY / STRIPE_SECRET / STRIPE_WEBHOOK_SECRET
-MAIL_HOST / MAIL_USERNAME / MAIL_PASSWORD
-FCM_PROJECT_ID
-WHATSAPP_PHONE / WHATSAPP_CALLMEBOT_APIKEY
-Une fois complété, tu l'envoies sur le VPS avec :
-
-
-scp .env.vps root@srv823208:/var/www/shop/.env
-root@srv823208:/var/www/shop# scp .env.vps root@srv823208:/var/www/shop/.env
-scp: stat local ".env.vps": No such file or directory
-root@srv823208:/var/www/shop#
-You've hit your limit · resets 1pm (Africa/Ouagadougou)
+*Développé par MHDKIEMDE — 2026*
