@@ -23,6 +23,7 @@ use App\Http\Controllers\Web\Admin\StockController as AdminStockController;
 use App\Http\Controllers\Web\Admin\DeliveryZoneController;
 use App\Http\Controllers\Web\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Web\Admin\ShopController as AdminShopController;
+use App\Http\Controllers\Web\MarketplaceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -62,11 +63,16 @@ Route::post('/logout', [WebAuthController::class, 'logout'])->name('logout')->mi
 
 // ── Panier (accessible invité + connecté) ────────────────────────────────
 Route::get('/cart',              [WebCartController::class, 'index'])->name('cart.index');
+Route::get('/cart/mini',         [WebCartController::class, 'mini'])->name('cart.mini');
 Route::post('/cart/add',         [WebCartController::class, 'add'])->name('cart.add');
 Route::patch('/cart/{id}',       [WebCartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/{id}',      [WebCartController::class, 'remove'])->name('cart.remove');
 Route::post('/cart/coupon',      [WebCartController::class, 'applyCoupon'])->name('cart.coupon');
 Route::delete('/cart/coupon',    [WebCartController::class, 'removeCoupon'])->name('cart.coupon.remove');
+
+// ── Marketplace public ────────────────────────────────────────────────────
+Route::get('/boutiques',         [MarketplaceController::class, 'index'])->name('marketplace.index');
+Route::get('/boutiques/{slug}',  [MarketplaceController::class, 'show'])->name('marketplace.show');
 
 // ── Pages statiques ───────────────────────────────────────────────────────
 Route::view('/contact', 'contact')->name('contact');
@@ -81,6 +87,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/account',                          [AccountController::class, 'profile'])->name('account.profile');
     Route::get('/account/orders',                   [AccountController::class, 'orders'])->name('account.orders');
     Route::get('/account/orders/{id}/invoice',      [AccountController::class, 'downloadInvoice'])->name('account.orders.invoice');
+    Route::get('/account/wishlist',                 [AccountController::class, 'wishlist'])->name('account.wishlist');
+    Route::post('/account/wishlist/toggle',         [AccountController::class, 'toggleWishlist'])->name('account.wishlist.toggle');
     Route::get('/account/edit',                     [AccountController::class, 'editProfile'])->name('account.edit');
     Route::put('/account/edit',                     [AccountController::class, 'updateProfile'])->name('account.update');
     Route::post('/account/password',                [AccountController::class, 'changePassword'])->name('account.password');

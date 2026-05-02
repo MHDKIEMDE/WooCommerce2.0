@@ -41,6 +41,9 @@
                         <a href="{{ route('account.addresses') }}" class="list-group-item list-group-item-action active">
                             <i class="fas fa-map-marker-alt me-2"></i> Mes adresses
                         </a>
+                        <a href="{{ route('account.wishlist') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-heart me-2"></i> Ma wishlist
+                        </a>
                         <a href="{{ route('account.edit') }}" class="list-group-item list-group-item-action">
                             <i class="fas fa-edit me-2"></i> Modifier le profil
                         </a>

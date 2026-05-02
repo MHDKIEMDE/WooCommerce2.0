@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\Setting;
+use App\Models\Wishlist;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -135,6 +136,38 @@ class AccountController extends Controller
         ])->setPaper('a4', 'portrait');
 
         return $pdf->download("facture-{$order->order_number}.pdf");
+    }
+
+    public function wishlist(Request $request): View
+    {
+        $items = Wishlist::with('product.images')
+            ->where('user_id', $request->user()->id)
+            ->latest()
+            ->paginate(12);
+
+        return view('account.wishlist', compact('items'));
+    }
+
+    public function toggleWishlist(Request $request): RedirectResponse
+    {
+        $request->validate(['product_id' => 'required|integer|exists:products,id']);
+
+        $user      = $request->user();
+        $productId = $request->product_id;
+
+        $existing = Wishlist::where('user_id', $user->id)
+            ->where('product_id', $productId)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+            $message = 'Produit retiré de votre liste de souhaits.';
+        } else {
+            Wishlist::create(['user_id' => $user->id, 'product_id' => $productId]);
+            $message = 'Produit ajouté à votre liste de souhaits.';
+        }
+
+        return back()->with('success', $message);
     }
 
     public function changePassword(Request $request): RedirectResponse

@@ -146,13 +146,13 @@
                             data-bs-toggle="modal" data-bs-target="#searchModal"><i
                                 class="fas fa-search text-primary"></i>
                         </button>
-                        <a href="{{ route('cart.index') }}" class="position-relative me-4 my-auto">
+                        <a href="{{ route('cart.index') }}" class="position-relative me-4 my-auto" id="cart-btn">
                             <i class="fa fa-shopping-bag fa-2x text-primary"></i>
-                            @if(($cartCount ?? 0) > 0)
-                            <span
+                            <span id="cart-badge"
                                 class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
-                                style="top: -5px; left: 15px; height: 20px; min-width: 20px;">{{ $cartCount }}</span>
-                            @endif
+                                style="top: -5px; left: 15px; height: 20px; min-width: 20px;{{ ($cartCount ?? 0) === 0 ? 'display:none!important' : '' }}">
+                                {{ $cartCount ?? 0 }}
+                            </span>
                         </a>
                         @auth <!-- Vérifie si l'utilisateur est connecté -->
                             <!-- Icône utilisateur connecté -->
@@ -419,6 +419,35 @@
             document.getElementById('modal-suggest-list')
         );
     })();
+    </script>
+
+    <script>
+    // Mini-cart : met à jour le badge panier après un ajout AJAX
+    function updateCartBadge(count) {
+        const badge = document.getElementById('cart-badge');
+        if (!badge) return;
+        badge.textContent = count;
+        badge.style.removeProperty('display');
+        if (count <= 0) badge.style.display = 'none';
+    }
+
+    // Intercept les formulaires "Ajouter au panier" qui veulent AJAX
+    document.addEventListener('submit', function (e) {
+        const form = e.target;
+        if (!form.matches('form[data-ajax-cart]')) return;
+        e.preventDefault();
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: new FormData(form),
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) updateCartBadge(data.count);
+        })
+        .catch(() => {});
+    });
     </script>
 
 </body>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Services\CartService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -24,7 +25,28 @@ class CartController extends Controller
         ]);
     }
 
-    public function add(Request $request): RedirectResponse
+    public function mini(Request $request): JsonResponse
+    {
+        $cart = $this->cartService->getCart($request->user());
+
+        $items = collect($cart['items'])->map(fn($item) => [
+            'id'    => $item->id,
+            'name'  => $item->product->name ?? '',
+            'qty'   => $item->quantity,
+            'price' => $item->product->price ?? 0,
+            'image' => $item->product->images->first()
+                ? \Illuminate\Support\Facades\Storage::url($item->product->images->first()->path)
+                : null,
+        ]);
+
+        return response()->json([
+            'count'  => $cart['count'],
+            'total'  => $cart['totals']['total'] ?? 0,
+            'items'  => $items,
+        ]);
+    }
+
+    public function add(Request $request): RedirectResponse|JsonResponse
     {
         $request->validate([
             'product_id' => ['required', 'integer', 'exists:products,id'],
@@ -40,7 +62,15 @@ class CartController extends Controller
         );
 
         if (! $result['success']) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $result['message']], 422);
+            }
             return back()->withErrors(['cart' => $result['message']]);
+        }
+
+        if ($request->expectsJson()) {
+            $cart = $this->cartService->getCart($request->user());
+            return response()->json(['success' => true, 'message' => $result['message'], 'count' => $cart['count']]);
         }
 
         return redirect()->route('cart.index')->with('success', $result['message']);
