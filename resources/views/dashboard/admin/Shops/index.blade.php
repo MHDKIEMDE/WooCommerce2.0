@@ -78,6 +78,7 @@
                             <td class="text-center text-muted small">{{ $shop->created_at->format('d/m/Y') }}</td>
                             <td class="text-center">
                                 <div class="d-flex gap-1 justify-content-center">
+                                    <a href="{{ route('admin.shops.products', $shop) }}" class="btn btn-sm btn-outline-primary" title="Voir les produits"><i class="fas fa-box"></i>@if($shop->products_count > 0)<span class="badge bg-primary ms-1">{{ $shop->products_count }}</span>@endif</a>
                                     @if($shop->status === 'pending')
                                     <form method="POST" action="{{ route('admin.shops.approve', $shop) }}">
                                         @csrf @method('PATCH')

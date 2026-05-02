@@ -143,9 +143,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('dashboard')->name('admin.')->
     Route::resource('templates', ShopTemplateController::class)->except(['show']);
     Route::post('templates/{template}/palettes',              [ShopTemplateController::class, 'storePalette'])->name('templates.palettes.store');
     Route::delete('templates/{template}/palettes/{palette}',  [ShopTemplateController::class, 'destroyPalette'])->name('templates.palettes.destroy');
-    Route::get('shops',                    [AdminShopController::class, 'index'])->name('shops.index');
-    Route::patch('shops/{shop}/approve',   [AdminShopController::class, 'approve'])->name('shops.approve');
-    Route::patch('shops/{shop}/suspend',   [AdminShopController::class, 'suspend'])->name('shops.suspend');
+    Route::get('shops',                              [AdminShopController::class, 'index'])->name('shops.index');
+    Route::patch('shops/{shop}/approve',             [AdminShopController::class, 'approve'])->name('shops.approve');
+    Route::patch('shops/{shop}/suspend',             [AdminShopController::class, 'suspend'])->name('shops.suspend');
+    Route::get('shops/{shop}/products',              [AdminShopController::class, 'products'])->name('shops.products');
+    Route::patch('shops/{shop}/products/{product}/toggle',  [AdminShopController::class, 'toggleProduct'])->name('shops.products.toggle');
+    Route::delete('shops/{shop}/products/{product}', [AdminShopController::class, 'destroyProduct'])->name('shops.products.destroy');
     Route::get('notifications',             [AdminNotificationController::class, 'index'])->name('notifications.index');
     Route::get('notifications/send',        [AdminNotificationController::class, 'send'])->name('notifications.send');
     Route::post('notifications/broadcast',  [AdminNotificationController::class, 'broadcast'])->name('notifications.broadcast');
