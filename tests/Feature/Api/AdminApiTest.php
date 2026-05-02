@@ -18,7 +18,7 @@ class AdminApiTest extends TestCase
 
     private function customerUser(): User
     {
-        return User::factory()->create(['role' => 'customer', 'is_active' => true]);
+        return User::factory()->create(['role' => 'buyer', 'is_active' => true]);
     }
 
     // ── Accès refusé aux clients ─────────────────────────────────────────

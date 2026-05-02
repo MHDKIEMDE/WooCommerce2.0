@@ -1,4 +1,4 @@
-@extends('dashboard.admin.layout.app')
+@encextends('dashboard.admin.layout.app')
 @section('title', 'Bannière & Statistiques')
 @section('contents')
 <div class="container-fluid px-4">

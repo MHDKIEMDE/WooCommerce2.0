@@ -4,6 +4,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Shop;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -12,17 +13,20 @@ class CatalogueApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    private Shop $shop;
+
     protected function setUp(): void
     {
         parent::setUp();
         Cache::flush();
+        $this->shop = Shop::factory()->create(['status' => 'active']);
     }
 
     // ── Products ─────────────────────────────────────────────────────────
 
     public function test_products_list_returns_paginated_json(): void
     {
-        Product::factory()->count(5)->create(['status' => 'active']);
+        Product::factory()->count(5)->create(['status' => 'active', 'shop_id' => $this->shop->id]);
 
         $response = $this->getJson('/api/v1/products');
 
@@ -34,9 +38,9 @@ class CatalogueApiTest extends TestCase
 
     public function test_products_filtered_by_category(): void
     {
-        $cat  = Category::factory()->create();
-        $inCat  = Product::factory()->create(['status' => 'active', 'category_id' => $cat->id]);
-        $outCat = Product::factory()->create(['status' => 'active']);
+        $cat    = Category::factory()->create();
+        $inCat  = Product::factory()->create(['status' => 'active', 'category_id' => $cat->id, 'shop_id' => $this->shop->id]);
+        $outCat = Product::factory()->create(['status' => 'active', 'shop_id' => $this->shop->id]);
 
         $response = $this->getJson("/api/v1/products?category={$cat->slug}");
 
@@ -49,7 +53,7 @@ class CatalogueApiTest extends TestCase
 
     public function test_product_show_returns_full_detail(): void
     {
-        $product = Product::factory()->create(['status' => 'active']);
+        $product = Product::factory()->create(['status' => 'active', 'shop_id' => $this->shop->id]);
 
         $response = $this->getJson("/api/v1/products/{$product->slug}");
 
@@ -59,7 +63,7 @@ class CatalogueApiTest extends TestCase
 
     public function test_inactive_product_returns_404(): void
     {
-        $product = Product::factory()->create(['status' => 'archived']);
+        $product = Product::factory()->create(['status' => 'archived', 'shop_id' => $this->shop->id]);
 
         $response = $this->getJson("/api/v1/products/{$product->slug}");
 
@@ -84,8 +88,8 @@ class CatalogueApiTest extends TestCase
 
     public function test_search_returns_matching_products(): void
     {
-        Product::factory()->create(['name' => 'Pommes bio', 'status' => 'active']);
-        Product::factory()->create(['name' => 'Carottes', 'status' => 'active']);
+        Product::factory()->create(['name' => 'Pommes bio', 'status' => 'active', 'shop_id' => $this->shop->id]);
+        Product::factory()->create(['name' => 'Carottes', 'status' => 'active', 'shop_id' => $this->shop->id]);
 
         $response = $this->getJson('/api/v1/search?q=pomme');
 

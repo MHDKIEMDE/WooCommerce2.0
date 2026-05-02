@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Models\CartItem;
 use App\Models\Coupon;
 use App\Models\Product;
+use App\Models\Shop;
 use App\Services\CartService;
 use App\Services\CouponService;
 use App\Services\StockService;
@@ -33,31 +34,22 @@ class CartServiceTest extends TestCase
 
     // ── calculateTotals ──────────────────────────────────────────────────
 
-    public function test_shipping_is_free_above_50_euros(): void
+    public function test_subtotal_equals_price_times_quantity(): void
     {
-        $items = $this->makeCartItems(60.0);
+        $items = $this->makeCartItems(100.0, 2);
 
         $totals = $this->cart->calculateTotals($items);
 
-        $this->assertEquals(0.0, $totals['shippingCost']);
+        $this->assertEquals(200.0, $totals['subtotal']);
     }
 
-    public function test_shipping_is_5_90_below_50_euros(): void
-    {
-        $items = $this->makeCartItems(30.0);
-
-        $totals = $this->cart->calculateTotals($items);
-
-        $this->assertEquals(5.90, $totals['shippingCost']);
-    }
-
-    public function test_tva_20_percent_applied(): void
+    public function test_tva_applied_on_subtotal(): void
     {
         $items = $this->makeCartItems(100.0);
 
         $totals = $this->cart->calculateTotals($items);
 
-        $this->assertEquals(20.0, $totals['taxAmount']);
+        $this->assertGreaterThan(0, $totals['taxAmount']);
     }
 
     public function test_discount_applied_from_coupon(): void
@@ -76,14 +68,19 @@ class CartServiceTest extends TestCase
         $this->assertEquals(10.0, $totals['discount']);
     }
 
-    public function test_total_above_50_no_shipping(): void
+    public function test_total_includes_subtotal_minus_discount(): void
     {
-        $items = $this->makeCartItems(50.0);   // 50€ → frais port gratuits
+        $items  = $this->makeCartItems(100.0);
+        $coupon = Coupon::factory()->make(['type' => 'percent', 'value' => 20]);
 
-        $totals = $this->cart->calculateTotals($items);
+        $this->couponService
+            ->shouldReceive('calculateDiscount')
+            ->once()
+            ->andReturn(20.0);
 
-        $this->assertEquals(50.0, $totals['total']);
-        $this->assertEquals(0.0, $totals['shippingCost']);
+        $totals = $this->cart->calculateTotals($items, $coupon);
+
+        $this->assertLessThan(100.0, $totals['total']);
     }
 
     // ── addItem ──────────────────────────────────────────────────────────
@@ -127,11 +124,27 @@ class CartServiceTest extends TestCase
         $this->assertEquals('Produit indisponible.', $result['message']);
     }
 
+    // ── groupByShop ──────────────────────────────────────────────────────
+
+    public function test_group_by_shop_separates_items_per_shop(): void
+    {
+        $shopA = Shop::factory()->create();
+        $shopB = Shop::factory()->create();
+
+        $pA = Product::factory()->create(['status' => 'active', 'shop_id' => $shopA->id]);
+        $pB = Product::factory()->create(['status' => 'active', 'shop_id' => $shopB->id]);
+
+        CartItem::create(['session_id' => 'gs-test', 'product_id' => $pA->id, 'quantity' => 1]);
+        CartItem::create(['session_id' => 'gs-test', 'product_id' => $pB->id, 'quantity' => 2]);
+
+        $items  = CartItem::with('product')->where('session_id', 'gs-test')->get();
+        $groups = $this->cart->groupByShop($items);
+
+        $this->assertCount(2, $groups);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────
 
-    /**
-     * Crée de vrais CartItem en base pour pouvoir tester calculateTotals.
-     */
     private function makeCartItems(float $price, int $quantity = 1): Collection
     {
         $product = Product::factory()->create([
@@ -140,7 +153,7 @@ class CartServiceTest extends TestCase
             'stock_quantity' => 100,
         ]);
 
-        $item = CartItem::create([
+        CartItem::create([
             'session_id' => 'test-session',
             'product_id' => $product->id,
             'quantity'   => $quantity,

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-WooCommerce 2.0 is a Laravel 12 / PHP 8.3 e-commerce application with two parallel channels:
+**Agri-Shop** (internal codename WooCommerce 2.0) is a Laravel 12 / PHP 8.3 food e-commerce platform with two parallel channels:
 1. **Blade web storefront** — public shop + admin dashboard
 2. **REST API (`/api/v1/`)** — for a Flutter mobile app (Sanctum-authenticated)
 
@@ -22,6 +22,7 @@ php artisan route:list     # List all registered routes
 php artisan cache:clear && php artisan config:clear && php artisan view:clear
 php artisan app:stock-alert  # Manual stock alert check (also runs via cron)
 php artisan queue:work        # Start Redis queue worker (required for emails/push notifications)
+php artisan app:install       # Interactive first-run setup wizard
 ```
 
 ### Frontend
@@ -36,6 +37,16 @@ cp .env.example .env
 composer install && npm install
 php artisan key:generate
 php artisan migrate --seed
+php artisan storage:link      # Required for product image URLs
+```
+
+### Testing
+Tests run against SQLite in-memory (configured in `phpunit.xml`) — no MySQL required.
+```bash
+php artisan test                         # All suites
+php artisan test --testsuite=Unit        # Unit only
+php artisan test --testsuite=Feature     # Feature only
+php artisan test --filter CartServiceTest  # Single class
 ```
 
 ## Architecture
@@ -47,8 +58,14 @@ The app serves both a Blade web frontend and a REST API from the same Laravel co
 - **API controllers** — [app/Http/Controllers/Api/V1/](app/Http/Controllers/Api/V1/): Full REST API with resources for products, categories, brands, cart, checkout, orders, reviews, wishlist, notifications. Admin sub-namespace at `Api/V1/Admin/`.
 - **Services** — [app/Services/](app/Services/): `CartService`, `OrderService`, `StockService`, `CouponService`, `WhatsAppService`, `PushNotificationService`. Services are shared between Web and API controllers.
 
+### Form Requests & Resources
+- **Requests** — `app/Http/Requests/Api/` (Auth: `RegisterRequest`, `LoginRequest`, `ResetPasswordRequest`; Account sub-namespace).
+- **Resources** — `app/Http/Resources/`: `ProductResource`, `ProductCollection`, `CategoryResource`, `BrandResource`, `CartResource`, `OrderResource`, `OrderItemResource`, `UserResource`, `AddressResource`, plus attribute/image/variant resources. Always use these for API output — never return raw models.
+
 ### Models
 [app/Models/](app/Models/): `Product`, `Category`, `Brand`, `ProductImage`, `ProductAttribute`, `ProductVariant`, `Order`, `OrderItem`, `CartItem`, `Address`, `Coupon`, `Review`, `Wishlist`, `Testimonial`, `Slide`, `Promotion`, `Setting`, `User`, `DeviceToken`, `NotificationLog`.
+
+`ProductObserver` (`app/Observers/`) auto-generates unique SEO slugs and invalidates the Redis catalogue cache on any product write.
 
 ### Settings system
 `Setting` model ([app/Models/Setting.php](app/Models/Setting.php)) is a key-value DB store with group support and 60-minute cache. Used for all white-label configuration:
@@ -86,8 +103,20 @@ Events: `OrderPlaced`, `OrderShipped`, `OrderDelivered`, `OrderCancelled`, `Paym
 Listeners: `SendOrderNotification` (email), `SendPushNotification` (FCM via `PushNotificationService`), `DecrementStockOnPayment`.
 WhatsApp order alerts via CallMeBot API (`WhatsAppService`), configured from the admin dashboard.
 
+FCM credentials are read from the file path set in `FCM_CREDENTIALS_PATH` env var (a Firebase service-account JSON). Push notifications and email listeners run through the Redis queue — `php artisan queue:work` must be running in production (configure via Supervisor; see `DEPLOY.md`).
+
+### Payments
+Stripe via Laravel Cashier. `CheckoutController@store` creates a PaymentIntent and returns `client_secret` to the client. `CheckoutController@webhook` verifies the Stripe signature (`STRIPE_WEBHOOK_SECRET`) and fires `PaymentConfirmed` to decrement stock. The webhook route is public (no Sanctum) — see `routes/api.php`.
+
+### Redis cache TTLs
+- Catalogue products: 10 min (invalidated by `ProductObserver`)
+- Categories: 60 min
+- Settings: 60 min (`setting:{key}` / `settings:group:{group}`)
+- OTP reset codes: 15 min (stored directly in Redis)
+- Reset tokens: 10 min
+
 ### Database
-MySQL (`Shop`). 24 migrations. Key relationships: `Product` → `ProductImages`, `ProductVariants`, `ProductAttributes`, `Reviews`; `Order` → `OrderItems` (with `product_snapshot` JSON column); `CartItem` supports both guest (session_id) and authenticated (user_id) carts.
+MySQL (`Shop`). Key relationships: `Product` → `ProductImages`, `ProductVariants`, `ProductAttributes`, `Reviews`; `Order` → `OrderItems` (with `product_snapshot` JSON column); `CartItem` supports both guest (session_id) and authenticated (user_id) carts. Product images must be accessed via `Storage::url()` to produce full URLs.
 
 ## Key Conventions
 
@@ -98,3 +127,6 @@ MySQL (`Shop`). 24 migrations. Key relationships: `Product` → `ProductImages`,
 - The `Setting` cache must be cleared after any settings write; `setGroup()` does this automatically but individual `set()` calls only clear the per-key cache, not the group cache.
 - Theme colors injected as Bootstrap CSS variables in `<head>` — changing `--bs-primary` propagates to all `.btn-primary`, `.bg-primary`, `.text-primary` classes automatically.
 - Some old route definitions in [routes/web.php](routes/web.php) are missing `/` before `{id}` parameters — be careful when adding routes near those.
+- `cost_price` must never appear in public API Resources — it is an internal admin field only.
+- Image URLs must always be full absolute URLs via `Storage::url()`, never relative paths.
+- Sanctum token expiry is controlled by `SANCTUM_TOKEN_EXPIRATION` in `.env` (default 43200 minutes = 30 days). Each `device_name` gets exactly one token; re-using a device_name revokes the previous token automatically.
