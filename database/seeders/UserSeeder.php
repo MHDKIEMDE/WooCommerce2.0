@@ -13,7 +13,8 @@ class UserSeeder extends Seeder
         // Admin principal
         User::firstOrCreate(['email' => 'admin@example.com'], [
             'name'      => 'Administrateur',
-            'password'  => Hash::make('admin2026!'),
+            'password'  => Hash::make('
+            '),
             'role'      => 'admin',
             'phone'     => '',
             'is_active' => true,

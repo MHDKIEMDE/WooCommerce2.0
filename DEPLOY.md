@@ -1,4 +1,4 @@
-# Guide de déploiement — Agri-Shop
+# Guide de déploiement — Monghetto
 
 ## Prérequis serveur
 
@@ -16,8 +16,8 @@
 
 ```bash
 # Cloner le dépôt
-git clone https://github.com/<org>/WooCommerce2.0.git /var/www/agri-shop
-cd /var/www/agri-shop
+git clone https://github.com/<org>/WooCommerce2.0.git /var/www/Shop
+cd /var/www/Shop
 
 # Dépendances PHP (sans dev)
 composer install --no-dev --optimize-autoloader
@@ -57,19 +57,19 @@ php artisan storage:link
 ```nginx
 server {
     listen 80;
-    server_name agri-shop.fr www.agri-shop.fr;
+    server_name shop.monghetto.com www.shop.monghetto.com;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name agri-shop.fr www.agri-shop.fr;
+    server_name shop.monghetto.com www.shop.monghetto.com;
 
-    root /var/www/agri-shop/public;
+    root /var/www/Shop/public;
     index index.php;
 
-    ssl_certificate     /etc/letsencrypt/live/agri-shop.fr/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/agri-shop.fr/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/shop.monghetto.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/shop.monghetto.com/privkey.pem;
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
@@ -106,12 +106,12 @@ server {
 
 ## 3. Supervisor — Queue Workers
 
-Créer `/etc/supervisor/conf.d/agri-shop-worker.conf` :
+Créer `/etc/supervisor/conf.d/monghetto-worker.conf` :
 
 ```ini
-[program:agri-shop-worker]
+[program:monghetto-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/agri-shop/artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
+command=php /var/www/Shop/artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
 autostart=true
 autorestart=true
 stopasgroup=true
@@ -119,14 +119,14 @@ killasgroup=true
 user=www-data
 numprocs=2
 redirect_stderr=true
-stdout_logfile=/var/log/agri-shop-worker.log
+stdout_logfile=/var/log/monghetto-worker.log
 stopwaitsecs=3600
 ```
 
 ```bash
 supervisorctl reread
 supervisorctl update
-supervisorctl start agri-shop-worker:*
+supervisorctl start monghetto-worker:*
 ```
 
 ---
@@ -136,7 +136,7 @@ supervisorctl start agri-shop-worker:*
 Ajouter à la crontab de `www-data` :
 
 ```
-* * * * * php /var/www/agri-shop/artisan schedule:run >> /dev/null 2>&1
+* * * * * php /var/www/Shop/artisan schedule:run >> /dev/null 2>&1
 ```
 
 Commandes planifiées :
@@ -163,7 +163,7 @@ Utiliser deux bases Redis séparées :
 ## 6. Mises à jour (zero-downtime)
 
 ```bash
-cd /var/www/agri-shop
+cd /var/www/Shop
 git pull origin main
 composer install --no-dev --optimize-autoloader
 npm ci && npm run build
@@ -171,7 +171,7 @@ php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-supervisorctl restart agri-shop-worker:*
+supervisorctl restart monghetto-worker:*
 ```
 
 ---
